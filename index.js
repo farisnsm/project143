@@ -71,8 +71,9 @@ bot.on('message', (msg) => {
                     }
                 } else {
                     let user = results[0]
+                    console.log(user)
                     if (user.active == 0 || user.ORD < moment().format("YYYYMMDD")) {
-                        bot.sendMessage(chatId,"You are not authorized from using this bot")
+                        bot.sendMessage(chatId,"You are not authorized to use this bot")
                     } else {
                         bot.sendMessage(chatId,"Invalid Input")
                     }
