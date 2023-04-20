@@ -72,9 +72,9 @@ bot.on('message', (msg) => {
                 } else {
                     let user = results[0]
                     if (user.active == 0 || user.ORD < moment().format("YYYYMMDD")) {
-                        //blacklisted
+                        bot.sendMessage(chatId,"You are not authorized from using this bot")
                     } else {
-                        //verified
+                        bot.sendMessage(chatId,"Invalid Input")
                     }
                 }
             }
