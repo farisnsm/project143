@@ -71,7 +71,6 @@ bot.on('message', (msg) => {
                     }
                 } else {
                     let user = results[0]
-                    console.log(user)
                     if (user.ACTIVE == 0 || user.ORD < moment().format("YYYYMMDD")) {
                         bot.sendMessage(chatId,"You are not authorized to use this bot")
                     } else {
@@ -94,6 +93,8 @@ bot.on('message', (msg) => {
             }
             let startTS = moment().format()
             let endTS = moment().add(duration, 'minutes').format()
+            console.log(startTS)
+            console.log(endTS)
             connection.query('select * from parade_state where PS_END >= "' + startTS + '"', function (error, results, fields) {
                 if (error) { console.log(error) } else {
                     if(results.length == 0){
