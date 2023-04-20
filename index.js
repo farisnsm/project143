@@ -28,7 +28,7 @@ function cancelTimeout() {
     setTimeout(cancelTimeout, 1000 * 60 * 60);
 }
 cancelTimeout()
-let adminChat = '-959437310'
+let adminChat = '-921229488'
 bot.on('message', (msg) => {
     let message = msg.text
     const chatId = msg.chat.id;
@@ -83,6 +83,9 @@ bot.on('message', (msg) => {
         let msgFromName = msg.from.first_name
         let msgFromId = msg.from.id
         if (message.toLowerCase().indexOf("start parade state") == 0) {
+            if(message.toLowerCase().trim() == "start parade state"){
+                message = "start parade state x"
+            }
             let duration = message.split("state")[1].trim()
             if (isNaN(duration)) { 
                 duration = 15
@@ -115,7 +118,7 @@ bot.on('message', (msg) => {
                             }
                         })
                     } else {
-                        bot.sendMessage(adminChat,"There is already a parade state on going right now. Type or Tap /checkParadeState" + results[1].ID + " to check its status")
+                        bot.sendMessage(adminChat,"There is already a parade state on going right now. Type or Tap /checkParadeState" + results[0].ID + " to check its status")
                     }
                 }
             })
@@ -141,7 +144,7 @@ bot.on('message', (msg) => {
                 }
             })
         }
-    }
+    } 
 })
 
 bot.on('callback_query', function onCallbackQuery(callbackQuery) {
@@ -170,7 +173,6 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
             connection.query('select * from users where TELEGRAM_ID = "' + responder +'"', function (error, results, fields) {
                 if (error) { console.log(error) } else {
                     user = results[0]
-                    console.log(results[0])
                     connection.query('insert into parade_state_attendance (PS_ID,PS_TS,PS_NAME,PS_RANK,PS_BY_ID,PS_OPTION) values ("'+actions[2]+'","'+moment().format()+'","'+user.NAME+'","'+user.RANK+'","'+user.TELEGRAM_ID+'","'+actions[1]+'")', function (error, results, fields) {
                         if (error) { console.log(error) } else {
                             bot.sendMessage(responder,"Response succesfully captured: " + actions[1])
