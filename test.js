@@ -1,3 +1,4 @@
-var moment = require('moment');
-let startTS = moment().format()
-console.log('select * from parade_state where PS_END >= "' + startTS + '"')
+let arr = [1,2,3,4,5]
+console.log(arr)
+arr.splice(2,1)
+console.log(arr)
