@@ -178,6 +178,21 @@ bot.on('message', (msg) => {
             if (message == '/start' || message == '/info') {
                 bot.sendMessage(msg.chat.id, "This is the duty personnel chat for " + nodeChat.NODE_NAME + "\n\nTo start parade state, key in \n\nStart parade state <DURATION(MINUTES)>\n\nThis will start a parade state that will end in the specified duration \ni.e. 'Start parade state 30' will start a parade state that will last 30mins\nIf no duration is provided (or invalide duration), the parade state will default to 15mins\nUsers will not be able to respond to a parade state after the time expires\n\nTap or type /viewusers to view all the users in this node")
             }
+
+            if (nodeOTP == message.trim() && nodeOTP != 0) {
+                //OTP recognized
+                connection.query("update nodes set NODE_CHAT_ID = '" + msg.chat.id + "' where ID = " + newNodeID, function (error, results, fields) {
+                    if (error) { console.log(error) } else {
+                        bot.sendMessage(msg.chat.id, "Set up complete. This chat is now the Duty Personnel Group Chat for " + newNodeName + '\n\nTap or type /start or /info to bring up the menu')
+                        createNode = false
+                        nodeOTP = 0
+                        newNodeID = 0
+                        newNodeName = ''
+                        getNodeChats()
+                    }
+                })
+            }
+
             if (message.toLowerCase().indexOf("start parade state") == 0) {
                 let msgFromName = msg.from.first_name
                 let msgFromId = msg.from.id
@@ -496,7 +511,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     if (path == 'cgc') {
         newNodeID = actions[1]
         nodeOTP = Math.floor(Math.random() * (9999 - 1000) + 1000)
-        bot.sendMessage(adminChat, "Send this OTP to a group chat the bot is in to make that chat the Duty Personnel chat for " + nodeChats.filter(r=> r.ID == actions[1])[0].NODE_NAME + " => " + nodeOTP)
+        bot.sendMessage(adminChat, "Send this OTP to a group chat the bot is in to make that chat the Duty Personnel chat for " + nodeChats.filter(r => r.ID == actions[1])[0].NODE_NAME + " => " + nodeOTP)
     }
 
     if (path == 'rn') {
