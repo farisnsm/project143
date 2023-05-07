@@ -183,7 +183,7 @@ bot.on('message', (msg) => {
                 //OTP recognized
                 connection.query("update nodes set NODE_CHAT_ID = '" + msg.chat.id + "' where ID = " + newNodeID, function (error, results, fields) {
                     if (error) { console.log(error) } else {
-                        bot.sendMessage(msg.chat.id, "Set up complete. This chat is now the Duty Personnel Group Chat for " + newNodeName + '\n\nTap or type /start or /info to bring up the menu')
+                        bot.sendMessage(msg.chat.id, "Set up complete. This chat is now the Duty Personnel Group Chat for " + nodeChat.NODE_NAME + '\n\nTap or type /start or /info to bring up the menu')
                         createNode = false
                         nodeOTP = 0
                         newNodeID = 0
