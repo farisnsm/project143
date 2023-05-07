@@ -231,7 +231,11 @@ bot.on('message', (msg) => {
                 checkParadeState(psID, msg.chat.id, nodeChat.ID)
             }
             if (message == '/viewusers') {
-                //TODO
+                connection.query("select * from users_details where NODE_ID = '" + nodeChat.ID + "'", function (error, results, fields) {
+                    if(error){console.log(error)} else{
+                        bot.sendMessage(nodeChat.NODE_CHAT_ID,"Viewing usesr in " & nodeChat.NODE_NAME & "\n\n"  & results.map(r=> r.RANK & " " & r.NAME & " (" & r.BRANCH_NAME & ")" ).join('\n'))
+                    }
+                })
             }
         }
     }
