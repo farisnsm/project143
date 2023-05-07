@@ -496,7 +496,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     if (path == 'cgc') {
         newNodeID = actions[1]
         nodeOTP = Math.floor(Math.random() * (9999 - 1000) + 1000)
-        bot.sendMessage(adminChat, "Send this OTP to a group chat the bot is in to make that chat the Duty Personnel chat for " + nodeChats.filter(r=> r.ID == actions[1])[0].NODE_NAME)
+        bot.sendMessage(adminChat, "Send this OTP to a group chat the bot is in to make that chat the Duty Personnel chat for " + nodeChats.filter(r=> r.ID == actions[1])[0].NODE_NAME + " => " + nodeOTP)
     }
 
     if (path == 'rn') {
