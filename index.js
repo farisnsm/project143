@@ -43,8 +43,8 @@ function checkParadeState(psID, chatID, nodeID) {
             if (results.length == 0) {
                 bot.sendMessage(chatID, "No results yet")
             } else {
-                connection.query('SELECT * from users_details where (NODE_ID = ' + nodeID + ') and TELEGRAM_ID not in (select PS_BY_ID from psa_details where PS_ID = '+psID+' and NODE_ID = ' + nodeID + ')', function (error, users, fields) {
-                    if(error){console.log(error)}
+                connection.query('SELECT * from users_details where (NODE_ID = ' + nodeID + ') and TELEGRAM_ID not in (select PS_BY_ID from psa_details where PS_ID = ' + psID + ' and NODE_ID = ' + nodeID + ')', function (error, users, fields) {
+                    if (error) { console.log(error) }
                     //console.log(users)
                     let response = "Parade State Summary"
                     response = response + "\nNode: " + results[0].NODE_NAME
@@ -230,10 +230,10 @@ bot.on('message', (msg) => {
                 let psID = message.toLowerCase().split("state")[1].split("@")[0].trim()
                 checkParadeState(psID, msg.chat.id, nodeChat.ID)
             }
-            if (message == '/viewusers') {
+            if (message == '/viewusers' || message == '/viewusers@project143_bot') {
                 connection.query("select * from users_details where NODE_ID = '" + nodeChat.ID + "'", function (error, results, fields) {
-                    if(error){console.log(error)} else{
-                        bot.sendMessage(nodeChat.NODE_CHAT_ID,"Viewing usesr in " & nodeChat.NODE_NAME & "\n\n"  & results.map(r=> r.RANK & " " & r.NAME & " (" & r.BRANCH_NAME & ")" ).join('\n'))
+                    if (error) { console.log(error) } else {
+                        bot.sendMessage(nodeChat.NODE_CHAT_ID, "Viewing users in " + nodeChat.NODE_NAME + "\n\n" & results.map(r => r.RANK + " " + r.NAME + " (" + r.BRANCH_NAME + ")").join('\n'))
                     }
                 })
             }
@@ -484,7 +484,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
             reply_markup: JSON.stringify({
                 inline_keyboard: [
                     [{ text: "Rename node", callback_data: 'rn_' + actions[1] + "_" + actions[2] }],
-                    // TODO [{ text: "Change group chat", callback_data: 'cgc_' + actions[1]}],
+                    [{ text: "Request group chat OTP", callback_data: 'cgc_' + actions[1] }],
                     [{ text: "Manage branches", callback_data: 'mb_' + actions[1] + "_" + actions[2] }],
                     [{ text: "Cancel", callback_data: 'x' }]
                 ]
@@ -493,13 +493,17 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         bot.sendMessage(adminChat, "Node Selected: " + actions[2] + "\n\nPlease select an action", options)
     }
 
-    //TODO
+    if (path == 'cgc') {
+        newNodeID = actions[1]
+        nodeOTP = Math.floor(Math.random() * (9999 - 1000) + 1000)
+        bot.sendMessage(adminChat, "Send this OTP to a group chat the bot is in to make that chat the Duty Personnel chat for " + nodeChats.filter(r=> r.ID == actions[1])[0].NODE_NAME)
+    }
+
     if (path == 'rn') {
         bot.sendMessage(adminChat, "Rename Node selected\nPlease key in the new name for " + actions[2])
         renameNode = actions[1]
     }
 
-    //TODO
     if (path == 'rb') {
         bot.sendMessage(adminChat, "Rename Branch selected\nPlease key in the new name for " + actions[2])
         renameBranch = actions[1]
