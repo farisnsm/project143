@@ -23,7 +23,7 @@ console.log(({
 }))
 function cancelTimeout() {
     connection.query('select 1', function (error, results, fields) {
-        if (error) { console.log(error) } else { console.log(moment().format()) }
+        if (error) { console.log(error) } else { console.log(moment().add(8,'hours').format()) }
     })
     setTimeout(cancelTimeout, 1000 * 60 * 60);
 }
@@ -126,7 +126,7 @@ bot.on('message', (msg) => {
                     }
                 } else {
                     let user = results[0]
-                    if (user.ACTIVE == 0 || user.ORD < moment().format("YYYYMMDD")) {
+                    if (user.ACTIVE == 0 || user.ORD < moment().add(8,'hours').format("YYYYMMDD")) {
                         bot.sendMessage(chatId, "You are not authorized to use this bot")
                     } else {
                         if (psQn.indexOf(chatId) != -1) {
@@ -204,15 +204,15 @@ bot.on('message', (msg) => {
                     duration = 15
                     bot.sendMessage(nodeChat.NODE_CHAT_ID, "Parade state duration invalid. Parade state default to 15mins")
                 }
-                let startTS = moment().format()
-                let endTS = moment().add(duration, 'minutes').format()
+                let startTS = moment().add(8,'hours').format()
+                let endTS = moment().add(8,'hours').add(duration, 'minutes').format()
                 connection.query('select * from parade_state where NODE_ID = ' + nodeChat.ID + ' and PS_END >= "' + startTS + '"', function (error, results, fields) {
                     if (error) { console.log(error) } else {
                         if (results.length == 0) {
                             connection.query('insert into parade_state (PS_START,PS_END,PS_BY_NAME,PS_BY_ID,NODE_ID) values("' + startTS + '","' + endTS + '","' + msgFromName + '","' + msgFromId + '",' + nodeChat.ID + ')', function (error, results, fields) {
                                 if (error) { console.log(error) } else {
                                     let psID = results.insertId
-                                    connection.query('select * from users where NODE_ID = ' + nodeChat.ID + ' and active = 1 and ord >= ' + moment().format("YYYYMMDD"), function (error, users, fields) {
+                                    connection.query('select * from users where NODE_ID = ' + nodeChat.ID + ' and active = 1 and ord >= ' + moment().add(8,'hours').format("YYYYMMDD"), function (error, users, fields) {
                                         if (error) { console.log(error) } else {
                                             connection.query('select * from statuses', function (error, results, fields) {
                                                 statuses = JSON.parse(JSON.stringify(results))
@@ -285,8 +285,8 @@ bot.on('message', (msg) => {
         //         duration = 15
         //         bot.sendMessage(adminChat, "Parade state duration invalid. Parade state default to 15mins")
         //     }
-        //     let startTS = moment().format()
-        //     let endTS = moment().add(duration, 'minutes').format()
+        //     let startTS = moment().add(8,'hours').format()
+        //     let endTS = moment().add(8,'hours').add(duration, 'minutes').format()
         //     console.log(startTS)
         //     console.log(endTS)
         //     connection.query('select * from parade_state where PS_END >= "' + startTS + '"', function (error, results, fields) {
@@ -295,7 +295,7 @@ bot.on('message', (msg) => {
         //                 connection.query('insert into parade_state (PS_START,PS_END,PS_BY_NAME,PS_BY_ID) values("' + startTS + '","' + endTS + '","' + msgFromName + '","' + msgFromId + '")', function (error, results, fields) {
         //                     if (error) { console.log(error) } else {
         //                         let psID = results.insertId
-        //                         connection.query('select * from users where active = 1 and ord >= ' + moment().format("YYYYMMDD"), function (error, results, fields) {
+        //                         connection.query('select * from users where active = 1 and ord >= ' + moment().add(8,'hours').format("YYYYMMDD"), function (error, results, fields) {
         //                             if (error) { console.log(error) } else {
         //                                 var options = {
         //                                     reply_markup: JSON.stringify({
@@ -449,21 +449,21 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         })
     }
     if (actions[0] == "PS") {
-        if (moment().format() <= moment(actions[3]).format()) {
+        if (moment().add(8,'hours').format() <= moment(actions[3]).format()) {
             let user = {}
             connection.query('select * from users where TELEGRAM_ID = "' + responder + '"', function (error, results, fields) {
                 if (error) { console.log(error) } else {
                     user = results[0]
                     let status = statuses.filter(s => s.ID == actions[4])[0]
                     if (status.FOLLOW_UP == null) {
-                        connection.query('insert into parade_state_attendance (PS_ID,PS_TS,PS_NAME,PS_RANK,PS_BY_ID,PS_OPTION) values ("' + actions[2] + '","' + moment().format() + '","' + user.NAME + '","' + user.RANK + '","' + user.TELEGRAM_ID + '","' + actions[1] + '")', function (error, results, fields) {
+                        connection.query('insert into parade_state_attendance (PS_ID,PS_TS,PS_NAME,PS_RANK,PS_BY_ID,PS_OPTION) values ("' + actions[2] + '","' + moment().add(8,'hours').format() + '","' + user.NAME + '","' + user.RANK + '","' + user.TELEGRAM_ID + '","' + actions[1] + '")', function (error, results, fields) {
                             if (error) { console.log(error) } else {
                                 bot.sendMessage(responder, "Response succesfully captured: " + actions[1])
                             }
                         })
 
                     } else {
-                        connection.query('insert into parade_state_attendance (PS_ID,PS_TS,PS_NAME,PS_RANK,PS_BY_ID,PS_OPTION,PS_REMARKS) values ("' + actions[2] + '","' + moment().format() + '","' + user.NAME + '","' + user.RANK + '","' + user.TELEGRAM_ID + '","' + actions[1] + '","Yet to answer follow up question")', function (error, results, fields) {
+                        connection.query('insert into parade_state_attendance (PS_ID,PS_TS,PS_NAME,PS_RANK,PS_BY_ID,PS_OPTION,PS_REMARKS) values ("' + actions[2] + '","' + moment().add(8,'hours').format() + '","' + user.NAME + '","' + user.RANK + '","' + user.TELEGRAM_ID + '","' + actions[1] + '","Yet to answer follow up question")', function (error, results, fields) {
                             if (error) { console.log(error) } else {
                                 bot.sendMessage(responder, "Status selected: " + actions[1] + "\nPlease answer the follow up question below\nYour status is not updated until you answer the follow up question\n\n" + status.FOLLOW_UP)
                                 psQn.push(responder)
