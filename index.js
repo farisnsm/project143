@@ -233,7 +233,7 @@ bot.on('message', (msg) => {
             if (message == '/viewusers' || message == '/viewusers@project143_bot') {
                 connection.query("select * from users_details where NODE_ID = '" + nodeChat.ID + "'", function (error, results, fields) {
                     if (error) { console.log(error) } else {
-                        bot.sendMessage(nodeChat.NODE_CHAT_ID, "Viewing users in " + nodeChat.NODE_NAME + "\n\n" & results.map(r => r.RANK + " " + r.NAME + " (" + r.BRANCH_NAME + ")").join('\n'))
+                        bot.sendMessage(nodeChat.NODE_CHAT_ID, "Viewing users in " + nodeChat.NODE_NAME + "\n\n" + results.map(r => r.RANK + " " + r.NAME + " (" + r.BRANCH_NAME + ")").join('\n'))
                     }
                 })
             }
