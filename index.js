@@ -54,7 +54,7 @@ function checkParadeState(psID, chatID, nodeID) {
                     let statusTally = [...new Set(results.map(r => r.PS_OPTION + ": " + results.filter(rr => rr.PS_OPTION == r.PS_OPTION).length))]
                     response = response + statusTally.join("\n")
                     response = response + "\nNo Response: " + users.length
-                    let branchTally = [...new Set(results.map(r => r.BRANCH_NAME + ": " + results.filter(rr => rr.BRANCH_NAME == r.BRANCH_NAME).length + "/" + r.COUNT + "\n" + results.filter(rr => rr.BRANCH_NAME == r.BRANCH_NAME).map(rr => rr.PS_RANK + " " + rr.PS_NAME + " - " + rr.PS_OPTION).join("\n") + "\n" + users.filter(rr => rr.BRANCH_NAME == r.BRANCH_NAME).map(rr => rr.RANK + " " + rr.NAME + " - NO RESPONSE").join("\n") + "\n"))]
+                    let branchTally = [...new Set(results.map(r => r.BRANCH_NAME + ": " + results.filter(rr => rr.BRANCH_NAME == r.BRANCH_NAME).length + "/" + r.COUNT + "\n" + results.filter(rr => rr.BRANCH_NAME == r.BRANCH_NAME).sort((a,b) => (b.PS_OPTION == "Present") - (a.PS_OPTION=="Present")).map(rr => rr.PS_RANK + " " + rr.PS_NAME + " - " + rr.PS_OPTION).join("\n") + "\n" + users.filter(rr => rr.BRANCH_NAME == r.BRANCH_NAME).map(rr => rr.RANK + " " + rr.NAME + " - NO RESPONSE").join("\n") + "\n"))]
                     response = response + "\n\n"
                     response = response + branchTally.join("\n")
                     let unresponded = users.filter(u => results.map(r => r.BRANCH_NAME).indexOf(u.BRANCH_NAME) == -1)
