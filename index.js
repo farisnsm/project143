@@ -36,6 +36,7 @@ function getNodeChats() {
         }
     })
 }
+
 getNodeChats()
 function checkParadeState(psID, chatID, nodeID) {
     connection.query('SELECT * from psa_details where PS_ID = ' + psID + ' and (NODE_ID = ' + nodeID + ' or 0 = ' + nodeID + ')', function (error, results, fields) {
@@ -99,30 +100,35 @@ bot.on('message', (msg) => {
                         let userName = message.split("Name:")[1].split("\n")[0].trim()
                         let userRank = message.split("Rank:")[1].split("\n")[0].trim()
                         let userORD = message.split("ORD Date:")[1].split("\n")[0].trim()
-                        if (userName.length != 0 && userRank.length != 0 && userORD != 0) {
-                            connection.query("insert into users (NAME,RANK,ORD,ACTIVE,TELEGRAM_ID) values ('" + userName + "','" + userRank + "','" + userORD + "','0','" + chatId + "')", function (error, results, fields) {
-                                if (error) { console.log(error) } else {
-                                    bot.sendMessage(chatId, "Your registration has been sent to admin for approval")
-                                    connection.query('select * from nodes', function (error, results, fields) {
-                                        if (error) { console.log(error) } else {
-                                            let branches = []
-                                            results.forEach(b => {
-                                                branches.push([{ text: b.NODE_NAME, callback_data: 'AR_' + b.ID + "_" + chatId }])
-                                            })
-                                            branches.push([{ text: "Reject", callback_data: 'RR_' + chatId }])
-                                            var options = {
-                                                reply_markup: JSON.stringify({
-                                                    inline_keyboard: branches
+                        if (userORD >= 20000101 && userORD <= 99991231) {
+                            if (userName.length != 0 && userRank.length != 0 && userORD != 0) {
+                                connection.query("insert into users (NAME,RANK,ORD,ACTIVE,TELEGRAM_ID) values ('" + userName + "','" + userRank + "','" + userORD + "','0','" + chatId + "')", function (error, results, fields) {
+                                    if (error) { console.log(error) } else {
+                                        bot.sendMessage(chatId, "Your registration has been sent to admin for approval")
+                                        connection.query('select * from nodes', function (error, results, fields) {
+                                            if (error) { console.log(error) } else {
+                                                let branches = []
+                                                results.forEach(b => {
+                                                    branches.push([{ text: b.NODE_NAME, callback_data: 'AR_' + b.ID + "_" + chatId }])
                                                 })
-                                            };
-                                            bot.sendMessage(adminChat, "New user registration\n\nName:" + message.split("Name:")[1] + "\n\n To approve, select a node to assign to", options)
-                                        }
-                                    })
-                                }
-                            })
+                                                branches.push([{ text: "Reject", callback_data: 'RR_' + chatId }])
+                                                var options = {
+                                                    reply_markup: JSON.stringify({
+                                                        inline_keyboard: branches
+                                                    })
+                                                };
+                                                bot.sendMessage(adminChat, "New user registration\n\nName:" + message.split("Name:")[1] + "\n\n To approve, select a node to assign to", options)
+                                            }
+                                        })
+                                    }
+                                })
+                            } else {
+                                bot.sendMessage(chatId, "Invalid Input")
+                            }
                         } else {
-                            bot.sendMessage(chatId, "Invalid Input")
+                            bot.sendMessage(chatId, "Invalid ORD Date. It should be in this format: YYYYMMDD")
                         }
+
                     } else {
                         bot.sendMessage(chatId, "User not found\nRegistering new user\n\nPlease copy this message, update the relevant fields and send it back to this bot\n\nName: YOUR_NAME\nRank: YOUR_RANK\nORD Date: YYYYMMDD")
                     }
@@ -146,11 +152,16 @@ bot.on('message', (msg) => {
                             let userName = message.split("Name:")[1].split("\n")[0].trim()
                             let userRank = message.split("Rank:")[1].split("\n")[0].trim()
                             let userORD = message.split("ORD Date:")[1].split("\n")[0].trim()
-                            connection.query('update users set NAME = "' + userName + '", RANK = "' + userRank + '", ORD = "' + userORD + '" where ID = ' + user.ID, function (error, results, fields) {
-                                if (error) { console.log(error) } else {
-                                    bot.sendMessage(chatId, "Info update succesful\nType or tap /editMyInfo to update your information")
-                                }
-                            })
+                            if (userORD >= 20000101 && userORD <= 99991231) {
+                                connection.query('update users set NAME = "' + userName + '", RANK = "' + userRank + '", ORD = "' + userORD + '" where ID = ' + user.ID, function (error, results, fields) {
+                                    if (error) { console.log(error) } else {
+                                        bot.sendMessage(chatId, "Info update succesful\nType or tap /editMyInfo to update your information")
+                                    }
+                                })
+                            } else {
+                                bot.sendMessage(chatId, "Invalid ORD Date. It should be in this format: YYYYMMDD")
+                            }
+
                         }
                         if (message.toLowerCase() == '/updatestatus') {
                             connection.query("select * from psa_details where PS_BY_ID = '" + chatId + "' order by ID desc limit 1", function (error, results, fields) {
@@ -397,12 +408,17 @@ bot.on('message', (msg) => {
             let userName = message.split("Name:")[1].split("\n")[0].trim()
             let userRank = message.split("Rank:")[1].split("\n")[0].trim()
             let userORD = message.split("ORD Date:")[1].split("\n")[0].trim()
-            connection.query('update users set NAME = "' + userName + '", RANK = "' + userRank + '", ORD = "' + userORD + '" where ID = ' + userID, function (error, results, fields) {
-                if (error) { console.log(error); bot.sendMessage(adminChat, "ERROR\nInfo update unsuccesful") } else {
-                    bot.sendMessage(adminChat, "Info update succesful")
+            if (userORD >= 20000101 && userORD <= 99991231) {
+                connection.query('update users set NAME = "' + userName + '", RANK = "' + userRank + '", ORD = "' + userORD + '" where ID = ' + userID, function (error, results, fields) {
+                    if (error) { console.log(error); bot.sendMessage(adminChat, "ERROR\nInfo update unsuccesful") } else {
+                        bot.sendMessage(adminChat, "Info update succesful")
 
-                }
-            })
+                    }
+                })
+            } else {
+                bot.sendMessage(chatId, "Invalid ORD Date. It should be in this format: YYYYMMDD")
+            }
+
         }
 
         if (renameNode != 0) {
@@ -472,7 +488,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     if (actions[0] == "PS") {
         if (moment().add(8, 'hours').format() <= moment(actions[3]).format()) {
             let user = {}
-            connection.query('delete from parade_state_attendance where ID > 0 and PS_BY_ID = "'+responder+'" and PS_ID = "'+actions[2]+'"; select * from users where TELEGRAM_ID = "' + responder + '"', function (error, results, fields) {
+            connection.query('delete from parade_state_attendance where ID > 0 and PS_BY_ID = "' + responder + '" and PS_ID = "' + actions[2] + '"; select * from users where TELEGRAM_ID = "' + responder + '"', function (error, results, fields) {
                 if (error) { console.log(error) } else {
                     user = results[1][0]
                     let status = statuses.filter(s => s.ID == actions[4])[0]
