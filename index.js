@@ -79,6 +79,7 @@ let newNodeID = 0
 let newNodeName = ''
 let createBranch = 0
 let rnID = 0
+let test = 0
 let psQn = []
 let adminChat = '-1001708116689'
 let statuses = []
