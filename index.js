@@ -78,8 +78,6 @@ let nodeOTP = 0
 let newNodeID = 0
 let newNodeName = ''
 let createBranch = 0
-let rnID = 0
-let test = 0
 let psQn = []
 let adminChat = '-1001708116689'
 let statuses = []
@@ -134,7 +132,7 @@ bot.on('message', (msg) => {
                             psQn.splice(psQn.indexOf(chatId), 1)
                             connection.query('update parade_state_attendance set PS_REMARKS = "' + message + '" where ID = (Select ID from (SELECT ID FROM parade_state_attendance where PS_BY_ID = "' + chatId + '" order by ID desc limit 1) psa)', function (error, results, fields) {
                                 if (error) { console.log(error) } else {
-                                    bot.sendMessage(chatId, "Parade state status follow up question succesfully captured")
+                                    bot.sendMessage(chatId, "Parade state status follow up question succesfully captured. Type or tap /updateStatus to modify your response")
                                 }
                             })
                         }
@@ -148,6 +146,14 @@ bot.on('message', (msg) => {
                             connection.query('update users set NAME = "' + userName + '", RANK = "' + userRank + '", ORD = "' + userORD + '" where ID = ' + user.ID, function (error, results, fields) {
                                 if (error) { console.log(error) } else {
                                     bot.sendMessage(chatId, "Info update succesful\nType or tap /editMyInfo to update your information")
+                                }
+                            })
+                        }
+                        if (message.toLowerCase() == '/updatestatus'){
+                            connection.query("select * from psa_details where PS_BY_ID = '" + chatId + "' order by ID desc limit 1", function (error, results, fields) {
+                                let row = results[0]
+                                if (moment(row.PS_END).format() <= moment().add(8,'hours').format){
+                                    bot.sendMessage(chatId, "There is currently no active parade state to update. The last parade state ended at " + moment(row.PS_END).format(userFriendlyTS))
                                 }
                             })
                         }
@@ -459,7 +465,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                     if (status.FOLLOW_UP == null) {
                         connection.query('insert into parade_state_attendance (PS_ID,PS_TS,PS_NAME,PS_RANK,PS_BY_ID,PS_OPTION) values ("' + actions[2] + '","' + moment().add(8,'hours').format() + '","' + user.NAME + '","' + user.RANK + '","' + user.TELEGRAM_ID + '","' + actions[1] + '")', function (error, results, fields) {
                             if (error) { console.log(error) } else {
-                                bot.sendMessage(responder, "Response succesfully captured: " + actions[1])
+                                bot.sendMessage(responder, "Response succesfully captured: " + actions[1] + '\nType or tap /updateStatus to modify your response')
                             }
                         })
 
