@@ -1,10 +1,10 @@
 const TelegramBot = require('node-telegram-bot-api');
-const token = "5811536548:AAGaMP8LESYfVAmne6y7joPcThoV0szuFuc"
+const token = process.env.telegramToken
 var moment = require('moment');
 const bot = new TelegramBot(token, { polling: true });
 var mysql = require('mysql2');
 let userFriendlyTS = "dddd, DD MMM YYYY h:mm A"
-let sqlCreds = "mysql://bc4d52e637516f:eeee0b9c@us-cdbr-east-06.cleardb.net/heroku_41eb19a141a06f5?reconnect=true"
+let sqlCreds = process.env.CLEARDB_DATABASE_URL
 var connection = mysql.createPool({
     connectionLimit: 100,
     host: sqlCreds.split('@')[1].split('/')[0],
@@ -80,7 +80,7 @@ let newNodeID = 0
 let newNodeName = ''
 let createBranch = 0
 let psQn = []
-let adminChat = '-1001708116689'
+let adminChat = process.env.ADMINCHAT
 let statuses = []
 connection.query('select * from statuses', function (error, results, fields) {
     statuses = JSON.parse(JSON.stringify(results))
