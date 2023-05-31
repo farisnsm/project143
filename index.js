@@ -155,7 +155,7 @@ bot.on('message', (msg) => {
                         if (message.toLowerCase() == '/updatestatus') {
                             connection.query("select * from psa_details where PS_BY_ID = '" + chatId + "' order by ID desc limit 1", function (error, results, fields) {
                                 let row = results[0]
-                                if (moment(row.PS_END).format() <= moment().add(8, 'hours').format) {
+                                if (moment(row.PS_END).format() <= moment().add(8, 'hours').format()) {
                                     bot.sendMessage(chatId, "There is currently no active parade state to update. The last parade state ended on " + moment(row.PS_END).format(userFriendlyTS))
                                 } else {
                                     connection.query('select * from statuses', function (error, results, fields) {
