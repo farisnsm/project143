@@ -294,6 +294,7 @@ bot.on('message', (msg) => {
                         [{ text: "Manage Nodes", callback_data: 'managenodes' }],
                         [{ text: "Manage Statuses", callback_data: 'managestatus' }],
                         [{ text: "Manage Users", callback_data: 'manageusers' }],
+                        [{ text: "Restore Blacklisted Users", callback_data: 'rbu' }],
                         [{ text: "Cancel", callback_data: 'x' }]
                     ]
                 })
@@ -593,6 +594,32 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         })
     }
 
+    if (path == 'rbu') {
+        connection.query('select * from users_details where active = 0', function (error, results, fields) {
+            if (error) { console.log(error) } else {
+                let opts = []
+                results.forEach(u => {
+                    opts.push([{ text: u.RANK + " " + u.NAME + " (" + u.NODE_NAME + ", " + u.BRANCH_NAME + ")", callback_data: 'rbu1_' + u.ID }])
+                })
+                opts.push([{ text: "Cancel", callback_data: 'x' }])
+                var options = {
+                    reply_markup: JSON.stringify({
+                        inline_keyboard: opts
+                    })
+                };
+                bot.sendMessage(adminChat, "Please select a user to restore", options)
+            }
+        })
+    }
+
+    if (path == 'rbu1'){
+        connection.query('update users set ACTIVE = 1 where ID = ' + actions[1], function (error, results, fields) {
+            if (error) { console.log(error) } else {
+                bot.sendMessage(adminChat, "User has been restored")
+            }
+        })
+    }
+
     if (path == 'mu1') {
         connection.query('select * from users_details where ID = ' + actions[1], function (error, results, fields) {
             if (error) { console.log(error) } else {
@@ -602,11 +629,29 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                         inline_keyboard: [
                             [{ text: "Edit user Name, Rank or ORD", callback_data: "eui_" + actions[1] }],
                             [{ text: "Assign user to a different node/branch", callback_data: "mu2_" + actions[1] }],
+                            [{ text: "Blacklist user (admin can restore user)", callback_data: 'blu_' + actions[1] }],
+                            [{ text: "Delete user (user can re-register)", callback_data: 'dlu_' + actions[1] }],
                             [{ text: "Cancel", callback_data: 'x' }]
                         ]
                     })
                 };
                 bot.sendMessage(adminChat, "Selected User:\nName: " + user.NAME + "\nRank: " + user.RANK + "\nORD Date: " + user.ORD + "\nNode: " + user.NODE_NAME + "\nBranch: " + user.BRANCH_NAME + "\n\nPlease select an option", options)
+            }
+        })
+    }
+
+    if (path == 'blu'){
+        connection.query('update users set ACTIVE = 0 where ID = ' + actions[1], function (error, results, fields) {
+            if (error) { console.log(error) } else {
+                bot.sendMessage(adminChat, msg.split('Please select an option')[0] + "This user has been blacklisted. You can restore this user")
+            }
+        })
+    }
+
+    if (path == 'dlu'){
+        connection.query('delete from users where ID = ' + actions[1], function (error, results, fields) {
+            if (error) { console.log(error) } else {
+                bot.sendMessage(adminChat, msg.split('Please select an option')[0] + "This user has been deleted. He/She may re-register if necessary")
             }
         })
     }
