@@ -297,6 +297,8 @@ bot.on('message', (msg) => {
                     }
                 })
             }
+            console.log(cPST)
+            console.log(nodeChat.ID)
 
             if (cPST.indexOf(nodeChat.ID) != -1) {
                 connection.query("insert into parade_state_types (node_id,ps_name) values (" + nodeChat.ID + ",'" + message + "')", function (error, results, fields) {
