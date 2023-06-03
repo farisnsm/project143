@@ -848,7 +848,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         let nodeID = actions[1]
         connection.query('select * from parade_state_types where NODE_ID = ' + nodeID, function (error, results, fields) {
             if (error) { console.log(error) } else {
-                let opts = [[{ text: "Create new Parade State", callback_data: 'cpst)_' + actions[1] }]]
+                let opts = [[{ text: "Create new Parade State", callback_data: 'cpst_' + actions[1] }]]
                 results.forEach(r => {
                     opts.push([{ text: "Delete: " + r.PS_NAME, callback_data: 'dpst_' + r.ID }])
                 })
