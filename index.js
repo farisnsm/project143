@@ -297,8 +297,6 @@ bot.on('message', (msg) => {
                     }
                 })
             }
-            console.log(cPST)
-            console.log(nodeChat.ID)
 
             if (cPST.indexOf(nodeChat.ID) != -1) {
                 connection.query("insert into parade_state_types (node_id,ps_name) values (" + nodeChat.ID + ",'" + message + "')", function (error, results, fields) {
@@ -876,7 +874,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     }
 
     if (path == "cpst") {
-        cPST.push(actions[1])
+        cPST.push(parseInt(actions[1]))
         bot.sendMessage(gcID, "Please key in the name of the new Parade State")
     }
 
