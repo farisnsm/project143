@@ -38,6 +38,7 @@ function getNodeChats() {
 }
 
 let cPST = []
+let cDD = []
 
 getNodeChats()
 function checkParadeState(psID, chatID, nodeID) {
@@ -307,6 +308,15 @@ bot.on('message', (msg) => {
                 })
             }
 
+            if (cDD.indexOf(nodeChat.ID) != -1) {
+                connection.query("update nodes set DEFAULT_DURATION = " + parseInt(message) + " where ID = " + nodeChat.ID, function (error, results, fields) {
+                    if (error) { console.log(error) } else {
+                        bot.sendMessage(msg.chat.id,"Default duration updated to " + parseInt(message) + "mins")
+                        cDD.splice(cDD.indexOf(nodeChat.ID), 1)
+                    }
+                })
+            }
+
         }
     }
     if (msg.chat.id == adminChat) {
@@ -333,50 +343,6 @@ bot.on('message', (msg) => {
                 }
             })
         }
-        // if (message.toLowerCase().indexOf("start parade state") == 0) {
-        //     if (message.toLowerCase().trim() == "start parade state") {
-        //         message = "start parade state x"
-        //     }
-        //     let duration = message.split("state")[1].trim()
-        //     if (isNaN(duration)) {
-        //         duration = 15
-        //         bot.sendMessage(adminChat, "Parade state duration invalid. Parade state default to 15mins")
-        //     }
-        //     let startTS = moment().add(8,'hours').format()
-        //     let endTS = moment().add(8,'hours').add(duration, 'minutes').format()
-        //     console.log(startTS)
-        //     console.log(endTS)
-        //     connection.query('select * from parade_state where PS_END >= "' + startTS + '"', function (error, results, fields) {
-        //         if (error) { console.log(error) } else {
-        //             if (results.length == 0) {
-        //                 connection.query('insert into parade_state (PS_START,PS_END,PS_BY_NAME,PS_BY_ID) values("' + startTS + '","' + endTS + '","' + msgFromName + '","' + msgFromId + '")', function (error, results, fields) {
-        //                     if (error) { console.log(error) } else {
-        //                         let psID = results.insertId
-        //                         connection.query('select * from users where active = 1 and ord >= ' + moment().add(8,'hours').format("YYYYMMDD"), function (error, results, fields) {
-        //                             if (error) { console.log(error) } else {
-        //                                 var options = {
-        //                                     reply_markup: JSON.stringify({
-        //                                         inline_keyboard: [
-        //                                             [{ text: "Present", callback_data: 'PS_Present_' + psID + "_" + moment(endTS).format() }],
-        //                                             [{ text: "Absent", callback_data: 'PS_Absent_' + psID + "_" + moment(endTS).format() }]
-        //                                         ]
-        //                                     })
-        //                                 };
-        //                                 results.forEach(r => {
-        //                                     bot.sendMessage(r.TELEGRAM_ID, "Parade state has started and will end in " + duration + " minutes", options)
-        //                                 })
-        //                                 bot.sendMessage(adminChat, "Parade state started and will end @ " + moment(endTS).format(userFriendlyTS) + "\nYou can type or tap /checkParadeState" + psID + " to check on the status of this parade state")
-        //                             }
-        //                         })
-        //                     }
-        //                 })
-        //             } else {
-        //                 bot.sendMessage(adminChat, "There is already a parade state on going right now. Type or Tap /checkParadeState" + results[0].ID + " to check its status")
-        //             }
-        //         }
-        //     })
-
-        // }
         if (message.toLowerCase().indexOf("/checkparadestate") == 0) {
             let psID = message.toLowerCase().split("state")[1].split("@")[0].trim()
             checkParadeState(psID, adminChat, 0)
@@ -876,6 +842,11 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     if (path == "cpst") {
         cPST.push(parseInt(actions[1]))
         bot.sendMessage(gcID, "Please key in the name of the new Parade State")
+    }
+
+    if (path == "cdd"){
+        cDD.push(parseInt(actions[1]))
+        bot.sendMessage(gcID, "Please key in the default duration for the Parade State (in minutes, numbers only)")
     }
 
     if (path == "vu"){
