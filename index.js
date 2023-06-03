@@ -39,6 +39,7 @@ function getNodeChats() {
 
 let cPST = []
 let cDD = []
+let spsC = {}
 
 getNodeChats()
 function checkParadeState(psID, chatID, nodeID) {
@@ -222,7 +223,7 @@ bot.on('message', (msg) => {
                         ]
                     })
                 };
-                bot.sendMessage(msg.chat.id, "This is the duty personnel chat for " + nodeChat.NODE_NAME,options)
+                bot.sendMessage(msg.chat.id, "This is the duty personnel chat for " + nodeChat.NODE_NAME, options)
             }
 
             if (nodeOTP == message.trim() && nodeOTP != 0) {
@@ -239,16 +240,13 @@ bot.on('message', (msg) => {
                 })
             }
 
-            if (message.toLowerCase().indexOf("start parade state") == 0) {
+            if (spsC.hasOwnProperty(nodeChat.ID)) {
                 let msgFromName = msg.from.first_name
                 let msgFromId = msg.from.id
-                if (message.toLowerCase().trim() == "start parade state") {
-                    message = "start parade state x"
-                }
-                let duration = message.split("state")[1].trim()
+                let duration = parseInt(spsC[nodeChat.ID])
                 if (isNaN(duration)) {
-                    duration = 15
-                    bot.sendMessage(nodeChat.NODE_CHAT_ID, "Parade state duration invalid. Parade state default to 15mins")
+                    duration = nodeChat.DEFAULT_DURATION
+                    bot.sendMessage(nodeChat.NODE_CHAT_ID, "Parade state duration invalid. Parade state default to "+nodeChat.DEFAULT_DURATION+"mins")
                 }
                 let startTS = moment().add(8, 'hours').format()
                 let endTS = moment().add(8, 'hours').add(duration, 'minutes').format()
@@ -285,6 +283,7 @@ bot.on('message', (msg) => {
                         }
                     }
                 })
+                delete spsC[nodeChat.ID]
 
             }
             if (message.toLowerCase().indexOf("/checkparadestate") == 0) {
@@ -302,7 +301,7 @@ bot.on('message', (msg) => {
             if (cPST.indexOf(nodeChat.ID) != -1) {
                 connection.query("insert into parade_state_types (node_id,ps_name) values (" + nodeChat.ID + ",'" + message + "')", function (error, results, fields) {
                     if (error) { console.log(error) } else {
-                        bot.sendMessage(msg.chat.id,"Parade State successfully created")
+                        bot.sendMessage(msg.chat.id, "Parade State successfully created")
                         cPST.splice(cPST.indexOf(nodeChat.ID), 1)
                     }
                 })
@@ -311,8 +310,9 @@ bot.on('message', (msg) => {
             if (cDD.indexOf(nodeChat.ID) != -1) {
                 connection.query("update nodes set DEFAULT_DURATION = " + parseInt(message) + " where ID = " + nodeChat.ID, function (error, results, fields) {
                     if (error) { console.log(error) } else {
-                        bot.sendMessage(msg.chat.id,"Default duration updated to " + parseInt(message) + "mins")
+                        bot.sendMessage(msg.chat.id, "Default duration updated to " + parseInt(message) + "mins")
                         cDD.splice(cDD.indexOf(nodeChat.ID), 1)
+                        getNodeChats()
                     }
                 })
             }
@@ -438,6 +438,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     const actions = callbackQuery.data.split('_');
     const msg = callbackQuery.message.text;
     let responder = callbackQuery.from.id
+    let responderName = callbackQuery.from.first_name
     let path = actions[0]
     let gcID = callbackQuery.message.chat.id
     if (path == 'x') {
@@ -844,17 +845,101 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         bot.sendMessage(gcID, "Please key in the name of the new Parade State")
     }
 
-    if (path == "cdd"){
+    if (path == "cdd") {
         cDD.push(parseInt(actions[1]))
         bot.sendMessage(gcID, "Please key in the default duration for the Parade State (in minutes, numbers only)")
     }
 
-    if (path == "vu"){
+    if (path == "vu") {
         connection.query("select * from users_details where NODE_ID = '" + actions[1] + "'", function (error, results, fields) {
             if (error) { console.log(error) } else {
                 bot.sendMessage(gcID, "Viewing users in " + results[0].NODE_NAME + "\n\n" + results.map(r => r.RANK + " " + r.NAME + " (" + r.BRANCH_NAME + ")").join('\n'))
             }
         })
+    }
+
+
+    if (path == 'sps') {
+        connection.query('select * from parade_state_types where NODE_ID = ' + actions[1], function (error, results, fields) {
+            if (error) { console.log(error) } else {
+                let opts = []
+                results.forEach(r => {
+                    opts.push([{ text: r.PS_NAME, callback_data: 'sps1_' + r.PS_NAME }])
+                })
+                opts.push([{ text: "Cancel", callback_data: 'x' }])
+                var options = {
+                    reply_markup: JSON.stringify({
+                        inline_keyboard: opts
+                    })
+                };
+                bot.sendMessage(gcID, "Please select a parade state to start", options)
+            }
+        })
+    }
+
+    if (path == "sps1") {
+        let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
+        var options = {
+            reply_markup: JSON.stringify({
+                inline_keyboard: [
+                    [{ text: "Default Duration: " + nodeChat.DEFAULT_DURATION + "mins", callback_data: "sps2_" + actions[1] }],
+                    [{ text: "Custom Durtation", callback_data: 'sps3' + actions[1] }],
+                    [{ text: "Cancel", callback_data: 'x' }]
+                ]
+            })
+        };
+        bot.sendMessage(gcID, "Starting Parade State: " + actions[1], options)
+    }
+
+    if (path == "sps2") {
+        let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
+        let msgFromName = responderName
+        let msgFromId = responder
+        
+        let duration = parseInt(nodeChat.DEFAULT_DURATION)
+        
+        let startTS = moment().add(8, 'hours').format()
+        let endTS = moment().add(8, 'hours').add(duration, 'minutes').format()
+        connection.query('select * from parade_state where NODE_ID = ' + nodeChat.ID + ' and PS_END >= "' + startTS + '"', function (error, results, fields) {
+            if (error) { console.log(error) } else {
+                if (results.length == 0) {
+                    connection.query('insert into parade_state (PS_TITLE,PS_START,PS_END,PS_BY_NAME,PS_BY_ID,NODE_ID) values("'+actions[1]+'","' + startTS + '","' + endTS + '","' + msgFromName + '","' + msgFromId + '",' + nodeChat.ID + ')', function (error, results, fields) {
+                        if (error) { console.log(error) } else {
+                            let psID = results.insertId
+                            connection.query('select * from users where NODE_ID = ' + nodeChat.ID + ' and active = 1 and ord >= ' + moment().add(8, 'hours').format("YYYYMMDD"), function (error, users, fields) {
+                                if (error) { console.log(error) } else {
+                                    connection.query('select * from statuses', function (error, results, fields) {
+                                        statuses = JSON.parse(JSON.stringify(results))
+                                        let opts = results.map(r => [{ text: r.STATUS, callback_data: 'PS_' + r.STATUS + '_' + psID + "_" + moment(endTS).format() + "_" + r.ID }])
+                                        var options = {
+                                            reply_markup: JSON.stringify({
+                                                inline_keyboard: opts
+                                            })
+                                        };
+                                        users.forEach(r => {
+                                            bot.sendMessage(r.TELEGRAM_ID, actions[1] + " has started and will end in " + duration + " minutes", options)
+                                        })
+                                        bot.sendMessage(nodeChat.NODE_CHAT_ID, actions[1] + " has started and will end @ " + moment(endTS).format(userFriendlyTS) + "\nYou can type or tap /checkParadeState" + psID + " to check on the status of this parade state")
+                                        bot.sendMessage(adminChat, actions[1] + " has started for " + nodeChat.NODE_NAME + " and will end @ " + moment(endTS).format(userFriendlyTS) + "\nYou can type or tap /checkParadeState" + psID + " to check on the status of this parade state")
+
+                                    })
+
+                                }
+                            })
+                        }
+                    })
+                } else {
+                    bot.sendMessage(nodeChat.NODE_CHAT_ID, "There is already a parade state on going right now. Type or Tap /checkParadeState" + results[0].ID + " to check its status")
+                }
+            }
+        })
+
+    }
+
+    if (path == "sps3") {
+        let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
+        spsC[nodeChat.ID] = actions[1]
+        bot.sendMessage(gcID, "Please key in the duration for "+actions[1]+" (in minutes, numbers only)")
     }
 
     bot.deleteMessage(callbackQuery.message.chat.id, callbackQuery.message.message_id)
