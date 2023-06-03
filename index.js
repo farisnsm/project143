@@ -37,6 +37,8 @@ function getNodeChats() {
     })
 }
 
+let cPST = []
+
 getNodeChats()
 function checkParadeState(psID, chatID, nodeID) {
     connection.query('SELECT * from psa_details where PS_ID = ' + psID + ' and (NODE_ID = ' + nodeID + ' or 0 = ' + nodeID + ')', function (error, results, fields) {
@@ -208,7 +210,18 @@ bot.on('message', (msg) => {
         } else {
             nodeChat = nodeChat[0]
             if (message == '/start' || message == '/info') {
-                bot.sendMessage(msg.chat.id, "This is the duty personnel chat for " + nodeChat.NODE_NAME + "\n\nTo start parade state, key in \n\nStart parade state <DURATION(MINUTES)>\n\nThis will start a parade state that will end in the specified duration \ni.e. 'Start parade state 30' will start a parade state that will last 30mins\nIf no duration is provided (or invalide duration), the parade state will default to 15mins\nUsers will not be able to respond to a parade state after the time expires\n\nTap or type /viewusers to view all the users in this node")
+                var options = {
+                    reply_markup: JSON.stringify({
+                        inline_keyboard: [
+                            [{ text: "Start Parade State", callback_data: 'sps_' + nodeChat.ID }],
+                            [{ text: "Change Parade State default duration", callback_data: 'cdd_' + nodeChat.ID }],
+                            [{ text: "Manage Parade State types", callback_data: 'pst_' + nodeChat.ID }],
+                            [{ text: "View Users", callback_data: 'vu_' + nodeChat.ID }]
+                            [{ text: "Cancel", callback_data: 'x' }]
+                        ]
+                    })
+                };
+                bot.sendMessage(msg.chat.id, "This is the duty personnel chat for " + nodeChat.NODE_NAME,options)
             }
 
             if (nodeOTP == message.trim() && nodeOTP != 0) {
@@ -284,6 +297,16 @@ bot.on('message', (msg) => {
                     }
                 })
             }
+
+            if (cPST.indexOf(nodeChat.ID) != -1) {
+                connection.query("insert into parade_state_types (node_id,ps_name) values (" + nodeChat.ID + ",'" + message + "')", function (error, results, fields) {
+                    if (error) { console.log(error) } else {
+                        bot.sendMessage(msg.chat.id,"Parade State successfully")
+                        cPST.splice(cPST.indexOf(nodeChat.ID), 1)
+                    }
+                })
+            }
+
         }
     }
     if (msg.chat.id == adminChat) {
@@ -295,6 +318,7 @@ bot.on('message', (msg) => {
                         [{ text: "Manage Statuses", callback_data: 'managestatus' }],
                         [{ text: "Manage Users", callback_data: 'manageusers' }],
                         [{ text: "Restore Blacklisted Users", callback_data: 'rbu' }],
+                        //[{ text: "Download Data", callback_data: 'dl' }],
                         [{ text: "Cancel", callback_data: 'x' }]
                     ]
                 })
@@ -449,6 +473,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     const msg = callbackQuery.message.text;
     let responder = callbackQuery.from.id
     let path = actions[0]
+    let gcID = callbackQuery.message.chat.id
     if (path == 'x') {
         bot.sendMessage(callbackQuery.message.chat.id, "Input cancelled")
     }
@@ -612,7 +637,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         })
     }
 
-    if (path == 'rbu1'){
+    if (path == 'rbu1') {
         connection.query('update users set ACTIVE = 1 where ID = ' + actions[1], function (error, results, fields) {
             if (error) { console.log(error) } else {
                 bot.sendMessage(adminChat, "User has been restored")
@@ -640,7 +665,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         })
     }
 
-    if (path == 'blu'){
+    if (path == 'blu') {
         connection.query('update users set ACTIVE = 0 where ID = ' + actions[1], function (error, results, fields) {
             if (error) { console.log(error) } else {
                 bot.sendMessage(adminChat, msg.split('Please select an option')[0] + "This user has been blacklisted. You can restore this user")
@@ -648,7 +673,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         })
     }
 
-    if (path == 'dlu'){
+    if (path == 'dlu') {
         connection.query('delete from users where ID = ' + actions[1], function (error, results, fields) {
             if (error) { console.log(error) } else {
                 bot.sendMessage(adminChat, msg.split('Please select an option')[0] + "This user has been deleted. He/She may re-register if necessary")
@@ -818,5 +843,48 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
             }
         })
     }
+
+    if (path == "pst") {
+        let nodeID = actions[1]
+        connection.query('select * from parade_state_types where NODE_ID = ' + nodeID, function (error, results, fields) {
+            if (error) { console.log(error) } else {
+                let opts = [[{ text: "Create new Parade State", callback_data: 'cpst)_' + r.ID }]]
+                results.forEach(r => {
+                    opts.push([{ text: "Delete: " + r.PS_NAME, callback_data: 'dpst_' + r.ID }])
+                })
+                opts.push([{ text: "Cancel", callback_data: 'x' }])
+                var options = {
+                    reply_markup: JSON.stringify({
+                        inline_keyboard: opts
+                    })
+                };
+                bot.sendMessage(gcID, "You can either create a new Parade State or selecting an existing one to delete", opts)
+            }
+
+        })
+
+    }
+
+    if (path == "dpst") {
+        connection.query('delete from parade_state_types where ID = ' + actions[1], function (error, results, fields) {
+            if (error) { console.log(error) } else {
+                bot.sendMessage(gcID, "The parade state has been deleted")
+            }
+        })
+    }
+
+    if (path == "cpst") {
+        cPST.push(actions[1])
+        bot.sendMessage(gcID, "Please key in the name of the new Parade State")
+    }
+
+    if (path == "vu"){
+        connection.query("select * from users_details where NODE_ID = '" + actions[1] + "'", function (error, results, fields) {
+            if (error) { console.log(error) } else {
+                bot.sendMessage(gcID, "Viewing users in " + results[0].NODE_NAME + "\n\n" + results.map(r => r.RANK + " " + r.NAME + " (" + r.BRANCH_NAME + ")").join('\n'))
+            }
+        })
+    }
+
     bot.deleteMessage(callbackQuery.message.chat.id, callbackQuery.message.message_id)
 })
