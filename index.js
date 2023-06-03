@@ -216,7 +216,7 @@ bot.on('message', (msg) => {
                             [{ text: "Start Parade State", callback_data: 'sps_' + nodeChat.ID }],
                             [{ text: "Change Parade State default duration", callback_data: 'cdd_' + nodeChat.ID }],
                             [{ text: "Manage Parade State types", callback_data: 'pst_' + nodeChat.ID }],
-                            [{ text: "View Users", callback_data: 'vu_' + nodeChat.ID }]
+                            [{ text: "View Users", callback_data: 'vu_' + nodeChat.ID }],
                             [{ text: "Cancel", callback_data: 'x' }]
                         ]
                     })
