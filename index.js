@@ -243,7 +243,7 @@ bot.on('message', (msg) => {
             if (spsC.hasOwnProperty(nodeChat.ID)) {
                 let msgFromName = msg.from.first_name
                 let msgFromId = msg.from.id
-                let duration = parseInt(spsC[nodeChat.ID])
+                let duration = parseInt(message)
                 if (isNaN(duration)) {
                     duration = nodeChat.DEFAULT_DURATION
                     bot.sendMessage(nodeChat.NODE_CHAT_ID, "Parade state duration invalid. Parade state default to "+nodeChat.DEFAULT_DURATION+"mins")
