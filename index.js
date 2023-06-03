@@ -883,7 +883,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
             reply_markup: JSON.stringify({
                 inline_keyboard: [
                     [{ text: "Default Duration: " + nodeChat.DEFAULT_DURATION + "mins", callback_data: "sps2_" + actions[1] }],
-                    [{ text: "Custom Durtation", callback_data: 'sps3' + actions[1] }],
+                    [{ text: "Custom Durtation", callback_data: 'sps3_' + actions[1] }],
                     [{ text: "Cancel", callback_data: 'x' }]
                 ]
             })
