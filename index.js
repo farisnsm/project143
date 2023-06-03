@@ -301,7 +301,7 @@ bot.on('message', (msg) => {
             if (cPST.indexOf(nodeChat.ID) != -1) {
                 connection.query("insert into parade_state_types (node_id,ps_name) values (" + nodeChat.ID + ",'" + message + "')", function (error, results, fields) {
                     if (error) { console.log(error) } else {
-                        bot.sendMessage(msg.chat.id,"Parade State successfully")
+                        bot.sendMessage(msg.chat.id,"Parade State successfully created")
                         cPST.splice(cPST.indexOf(nodeChat.ID), 1)
                     }
                 })
