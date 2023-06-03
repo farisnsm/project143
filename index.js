@@ -858,7 +858,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                         inline_keyboard: opts
                     })
                 };
-                bot.sendMessage(gcID, "You can either create a new Parade State or selecting an existing one to delete", opts)
+                bot.sendMessage(gcID, "You can either create a new Parade State or selecting an existing one to delete", options)
             }
 
         })
