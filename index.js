@@ -747,7 +747,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                         inline_keyboard: opts
                     })
                 };
-                bot.sendMessage(adminChat, "Please select either an existing status or create a new one", options)
+                bot.sendMessage(gcID, "Please select either an existing status or create a new one", options)
             }
         })
     }
