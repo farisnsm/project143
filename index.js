@@ -77,7 +77,7 @@ function checkParadeState(psID, chatID, nodeID) {
 cancelTimeout()
 let createNode = false
 let createStatus = []
-let editStatus = 0
+let editStatus = {}
 let createStatusQn = {}
 let nodeOTP = 0
 let newNodeID = 0
@@ -217,7 +217,7 @@ bot.on('message', (msg) => {
                         inline_keyboard: [
                             [{ text: "Start Parade State", callback_data: 'sps_' + nodeChat.ID }],
                             [{ text: "Change Parade State default duration", callback_data: 'cdd_' + nodeChat.ID }],
-                            [{ text: "Manage Parade State types", callback_data: 'pst_' + nodeChat.ID }], 
+                            [{ text: "Manage Parade State types", callback_data: 'pst_' + nodeChat.ID }],
                             [{ text: "Manage statuses", callback_data: 'managestatus_' + nodeChat.ID }],
                             [{ text: "View Users", callback_data: 'vu_' + nodeChat.ID }],
                             [{ text: "Cancel", callback_data: 'x' }]
@@ -320,7 +320,7 @@ bot.on('message', (msg) => {
 
             if (createStatus.indexOf(nodeChat.ID) != -1) {
                 createStatus.splice(createStatus.indexOf(nodeChat.ID), 1)
-                connection.query('insert into statuses (STATUS,NODE_ID) values ("' + message + '",'+nodeChat.ID+')', function (error, results, fields) {
+                connection.query('insert into statuses (STATUS,NODE_ID) values ("' + message + '",' + nodeChat.ID + ')', function (error, results, fields) {
                     if (error) { console.log(error) } else {
                         var options = {
                             reply_markup: JSON.stringify({
@@ -341,6 +341,16 @@ bot.on('message', (msg) => {
                 connection.query('update statuses set FOLLOW_UP = "' + message + '" where ID = ' + sID, function (error, results, fields) {
                     if (error) { console.log(error) } else {
                         bot.sendMessage(msg.chat.id, "Status update/creation successfull")
+                    }
+                })
+            }
+
+            if (editStatus.hasOwnProperty(nodeChat.ID) != -1) {
+                let sID = editStatus[nodeChat.ID]
+                delete editStatus[nodeChat.ID]
+                connection.query('update statuses set STATUS = "' + message + '" where ID = ' + sID, function (error, results, fields) {
+                    if (error) { console.log(error) } else {
+                        bot.sendMessage(msg.chat.id, "Status update successfull")
                     }
                 })
             }
@@ -388,16 +398,8 @@ bot.on('message', (msg) => {
         }
 
 
-        
-        if (editStatus != 0) {
-            let sID = editStatus
-            editStatus = 0
-            connection.query('update statuses set STATUS = "' + message + '" where ID = ' + sID, function (error, results, fields) {
-                if (error) { console.log(error) } else {
-                    bot.sendMessage(adminChat, "Status update successfull")
-                }
-            })
-        }
+
+
         if (eui != 0) {
             let userID = eui
             eui = 0
@@ -739,7 +741,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         let opts = []
         connection.query('select * from statuses where NODE_ID = ' + actions[1], function (error, results, fields) {
             if (error) { console.log(error) } else {
-                opts = results.map(r => [{ text: r.STATUS, callback_data: "ms_" + r.ID }])
+                opts = results.map(r => [{ text: r.STATUS, callback_data: "ms_" + r.ID + "_" + actions[1] }])
                 opts.push([{ text: "Create new status", callback_data: "cns_" + actions[1] }])
                 opts.push([{ text: "Cancel", callback_data: 'x' }])
                 var options = {
@@ -772,7 +774,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                 results = results[0]
                 let qn = ""
                 let opts = [
-                    [{ text: "Edit status title", callback_data: "editstatus_" + actions[1] }],
+                    [{ text: "Edit status title", callback_data: "editstatus_" + actions[1] + "_" + actions[2] }],
                     [{ text: "Delete status", callback_data: "deletestatus_" + actions[1] }]
                 ]
                 if (results.FOLLOW_UP == null) {
@@ -796,8 +798,8 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     }
 
     if (path == "editstatus") {
-        editStatus = actions[1]
-        bot.sendMessage(adminChat, "Please key in the new title for the status")
+        editStatus[parseInt(actions[2])] = pushparseInt(actions[1])
+        bot.sendMessage(gcID, "Please key in the new title for the status")
     }
 
     if (path == "deletestatus") {
