@@ -790,7 +790,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                     })
                 };
 
-                bot.sendMessage(adminChat, "Status selected: " + results.STATUS + "\n" + qn + "Please select an action", options)
+                bot.sendMessage(gcID, "Status selected: " + results.STATUS + "\n" + qn + "Please select an action", options)
             }
         })
     }
@@ -803,7 +803,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     if (path == "deletestatus") {
         connection.query('delete from statuses where ID = ' + actions[1], function (error, results, fields) {
             if (error) { console.log(error) } else {
-                bot.sendMessage(adminChat, "Status succesfully deleted")
+                bot.sendMessage(gcID, "Status succesfully deleted")
             }
         })
     }
