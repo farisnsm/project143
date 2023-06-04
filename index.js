@@ -325,7 +325,7 @@ bot.on('message', (msg) => {
                         var options = {
                             reply_markup: JSON.stringify({
                                 inline_keyboard: [
-                                    [{ text: "Yes", callback_data: "fuqn_" + results.insertId }],
+                                    [{ text: "Yes", callback_data: "fuqn_" + results.insertId + "_" + nodeChat.ID }],
                                     [{ text: "No", callback_data: "cnsx" }]
                                 ]
                             })
@@ -762,7 +762,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     }
 
     if (path == 'fuqn') {
-        createStatusQn[parseInt(actions[1])] = actions[1]
+        createStatusQn[parseInt(actions[2])] = parseInt(actions[1])
         bot.sendMessage(gcID, "Please key in the follow up question when users select this status")
     }
 
