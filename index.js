@@ -76,9 +76,9 @@ function checkParadeState(psID, chatID, nodeID) {
 }
 cancelTimeout()
 let createNode = false
-let createStatus = false
+let createStatus = []
 let editStatus = 0
-let createStatusQn = 0
+let createStatusQn = {}
 let nodeOTP = 0
 let newNodeID = 0
 let newNodeName = ''
@@ -217,7 +217,8 @@ bot.on('message', (msg) => {
                         inline_keyboard: [
                             [{ text: "Start Parade State", callback_data: 'sps_' + nodeChat.ID }],
                             [{ text: "Change Parade State default duration", callback_data: 'cdd_' + nodeChat.ID }],
-                            [{ text: "Manage Parade State types", callback_data: 'pst_' + nodeChat.ID }],
+                            [{ text: "Manage Parade State types", callback_data: 'pst_' + nodeChat.ID }], \
+                            [{ text: "Manage statuses", callback_data: 'managestatus_' + nodeChat.ID }],
                             [{ text: "View Users", callback_data: 'vu_' + nodeChat.ID }],
                             [{ text: "Cancel", callback_data: 'x' }]
                         ]
@@ -246,7 +247,7 @@ bot.on('message', (msg) => {
                 let duration = parseInt(message)
                 if (isNaN(duration)) {
                     duration = nodeChat.DEFAULT_DURATION
-                    bot.sendMessage(nodeChat.NODE_CHAT_ID, "Parade state duration invalid. Parade state default to "+nodeChat.DEFAULT_DURATION+"mins")
+                    bot.sendMessage(nodeChat.NODE_CHAT_ID, "Parade state duration invalid. Parade state default to " + nodeChat.DEFAULT_DURATION + "mins")
                 }
                 let startTS = moment().add(8, 'hours').format()
                 let endTS = moment().add(8, 'hours').add(duration, 'minutes').format()
@@ -317,6 +318,33 @@ bot.on('message', (msg) => {
                 })
             }
 
+            if (createStatus.indexOf(nodeChat.ID) != -1) {
+                createStatus.splice(createStatus.indexOf(nodeChat.ID), 1)
+                connection.query('insert into statuses (STATUS,NODE_ID) values ("' + message + '",'+nodeChat.ID+')', function (error, results, fields) {
+                    if (error) { console.log(error) } else {
+                        var options = {
+                            reply_markup: JSON.stringify({
+                                inline_keyboard: [
+                                    [{ text: "Yes", callback_data: "fuqn_" + results.insertId }],
+                                    [{ text: "No", callback_data: "cnsx" }]
+                                ]
+                            })
+                        };
+                        bot.sendMessage(msg.chat.id, "Does this status require a follow up question?\ni.e. Please key in the end date of your MC", options)
+                    }
+                })
+            }
+
+            if (createStatusQn.hasOwnProperty(nodeChat.ID)) {
+                let sID = createStatusQn[nodeChat.ID]
+                delete createStatusQn[nodeChat.ID]
+                connection.query('update statuses set FOLLOW_UP = "' + message + '" where ID = ' + sID, function (error, results, fields) {
+                    if (error) { console.log(error) } else {
+                        bot.sendMessage(msg.chat.id, "Status update/creation successfull")
+                    }
+                })
+            }
+
         }
     }
     if (msg.chat.id == adminChat) {
@@ -325,7 +353,7 @@ bot.on('message', (msg) => {
                 reply_markup: JSON.stringify({
                     inline_keyboard: [
                         [{ text: "Manage Nodes", callback_data: 'managenodes' }],
-                        [{ text: "Manage Statuses", callback_data: 'managestatus' }],
+                        //[{ text: "Manage Statuses", callback_data: 'managestatus' }],
                         [{ text: "Manage Users", callback_data: 'manageusers' }],
                         [{ text: "Restore Blacklisted Users", callback_data: 'rbu' }],
                         //[{ text: "Download Data", callback_data: 'dl' }],
@@ -359,31 +387,8 @@ bot.on('message', (msg) => {
             })
         }
 
-        if (createStatus == true) {
-            createStatus = false
-            connection.query('insert into statuses (STATUS) values ("' + message + '")', function (error, results, fields) {
-                if (error) { console.log(error) } else {
-                    var options = {
-                        reply_markup: JSON.stringify({
-                            inline_keyboard: [
-                                [{ text: "Yes", callback_data: "fuqn_" + results.insertId }],
-                                [{ text: "No", callback_data: "cnsx" }]
-                            ]
-                        })
-                    };
-                    bot.sendMessage(adminChat, "Does this status require a follow up question?\ni.e. Please key in the end date of your MC", options)
-                }
-            })
-        }
-        if (createStatusQn != 0) {
-            let sID = createStatusQn
-            createStatusQn = 0
-            connection.query('update statuses set FOLLOW_UP = "' + message + '" where ID = ' + sID, function (error, results, fields) {
-                if (error) { console.log(error) } else {
-                    bot.sendMessage(adminChat, "Status update/creation successfull")
-                }
-            })
-        }
+
+        
         if (editStatus != 0) {
             let sID = editStatus
             editStatus = 0
@@ -732,10 +737,10 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
 
     if (path == 'managestatus') {
         let opts = []
-        connection.query('select * from statuses', function (error, results, fields) {
+        connection.query('select * from statuses where NODE_ID = ' + actions[1], function (error, results, fields) {
             if (error) { console.log(error) } else {
                 opts = results.map(r => [{ text: r.STATUS, callback_data: "ms_" + r.ID }])
-                opts.push([{ text: "Create new status", callback_data: "cns" }])
+                opts.push([{ text: "Create new status", callback_data: "cns_" + actions[1] }])
                 opts.push([{ text: "Cancel", callback_data: 'x' }])
                 var options = {
                     reply_markup: JSON.stringify({
@@ -748,17 +753,17 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     }
 
     if (path == 'cns') {
-        createStatus = true
-        bot.sendMessage(adminChat, "Please key in the Title of the Status\ni.e. Present, MC, On Leave etc...")
+        createStatus.push(parseInt(actions[1]))
+        bot.sendMessage(gcID, "Please key in the Title of the Status\ni.e. Present, MC, On Leave etc...")
     }
 
     if (path == 'cnsx') {
-        bot.sendMessage(adminChat, "New status succesfully created")
+        bot.sendMessage(gcID, "New status succesfully created")
     }
 
     if (path == 'fuqn') {
-        createStatusQn = actions[1]
-        bot.sendMessage(adminChat, "Please key in the follow up question when users select this status")
+        createStatusQn[parseInt(actions[1])] = actions[1]
+        bot.sendMessage(gcID, "Please key in the follow up question when users select this status")
     }
 
     if (path == 'ms') {
@@ -895,15 +900,15 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
         let msgFromName = responderName
         let msgFromId = responder
-        
+
         let duration = parseInt(nodeChat.DEFAULT_DURATION)
-        
+
         let startTS = moment().add(8, 'hours').format()
         let endTS = moment().add(8, 'hours').add(duration, 'minutes').format()
         connection.query('select * from parade_state where NODE_ID = ' + nodeChat.ID + ' and PS_END >= "' + startTS + '"', function (error, results, fields) {
             if (error) { console.log(error) } else {
                 if (results.length == 0) {
-                    connection.query('insert into parade_state (PS_TITLE,PS_START,PS_END,PS_BY_NAME,PS_BY_ID,NODE_ID) values("'+actions[1]+'","' + startTS + '","' + endTS + '","' + msgFromName + '","' + msgFromId + '",' + nodeChat.ID + ')', function (error, results, fields) {
+                    connection.query('insert into parade_state (PS_TITLE,PS_START,PS_END,PS_BY_NAME,PS_BY_ID,NODE_ID) values("' + actions[1] + '","' + startTS + '","' + endTS + '","' + msgFromName + '","' + msgFromId + '",' + nodeChat.ID + ')', function (error, results, fields) {
                         if (error) { console.log(error) } else {
                             let psID = results.insertId
                             connection.query('select * from users where NODE_ID = ' + nodeChat.ID + ' and active = 1 and ord >= ' + moment().add(8, 'hours').format("YYYYMMDD"), function (error, users, fields) {
@@ -939,7 +944,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     if (path == "sps3") {
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
         spsC[nodeChat.ID] = actions[1]
-        bot.sendMessage(gcID, "Please key in the duration for "+actions[1]+" (in minutes, numbers only)")
+        bot.sendMessage(gcID, "Please key in the duration for " + actions[1] + " (in minutes, numbers only)")
     }
 
     bot.deleteMessage(callbackQuery.message.chat.id, callbackQuery.message.message_id)
