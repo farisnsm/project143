@@ -92,6 +92,7 @@ connection.query('select * from statuses', function (error, results, fields) {
 let eui = 0
 let renameNode = 0
 let renameBranch = 0
+bot.sendMessage('200418207',"Bot has started")
 bot.on('message', (msg) => {
     let message = msg.text
     const chatId = msg.chat.id;
@@ -345,7 +346,7 @@ bot.on('message', (msg) => {
                 })
             }
 
-            if (editStatus.hasOwnProperty(nodeChat.ID) != -1) {
+            if (editStatus.hasOwnProperty(nodeChat.ID)) {
                 let sID = editStatus[nodeChat.ID]
                 delete editStatus[nodeChat.ID]
                 connection.query('update statuses set STATUS = "' + message + '" where ID = ' + sID, function (error, results, fields) {
