@@ -174,7 +174,7 @@ bot.on('message', (msg) => {
                                 if (moment(row.PS_END).format() <= moment().add(8, 'hours').format()) {
                                     bot.sendMessage(chatId, "There is currently no active parade state to update. The last parade state ended on " + moment(row.PS_END).format(userFriendlyTS))
                                 } else {
-                                    connection.query('select * from statuses', function (error, results, fields) {
+                                    connection.query('select * from statuses where NODE_ID = ' + user.NODE_ID, function (error, results, fields) {
                                         statuses = JSON.parse(JSON.stringify(results))
                                         let opts = results.map(r => [{ text: r.STATUS, callback_data: 'PS_' + r.STATUS + '_' + row.PS_ID + "_" + moment(row.PS_END).format() + "_" + r.ID }])
                                         var options = {
@@ -255,12 +255,12 @@ bot.on('message', (msg) => {
                 connection.query('select * from parade_state where NODE_ID = ' + nodeChat.ID + ' and PS_END >= "' + startTS + '"', function (error, results, fields) {
                     if (error) { console.log(error) } else {
                         if (results.length == 0) {
-                            connection.query('insert into parade_state (PS_START,PS_END,PS_BY_NAME,PS_BY_ID,NODE_ID) values("' + startTS + '","' + endTS + '","' + msgFromName + '","' + msgFromId + '",' + nodeChat.ID + ')', function (error, results, fields) {
+                            connection.query('insert into parade_state (PS_TITLE, PS_START,PS_END,PS_BY_NAME,PS_BY_ID,NODE_ID) values("'+spsC[nodeChat.ID]+'","' + startTS + '","' + endTS + '","' + msgFromName + '","' + msgFromId + '",' + nodeChat.ID + ')', function (error, results, fields) {
                                 if (error) { console.log(error) } else {
                                     let psID = results.insertId
                                     connection.query('select * from users where NODE_ID = ' + nodeChat.ID + ' and active = 1 and ord >= ' + moment().add(8, 'hours').format("YYYYMMDD"), function (error, users, fields) {
                                         if (error) { console.log(error) } else {
-                                            connection.query('select * from statuses', function (error, results, fields) {
+                                            connection.query('select * from statuses where NODE_ID = ' + nodeChat.ID, function (error, results, fields) {
                                                 statuses = JSON.parse(JSON.stringify(results))
                                                 let opts = results.map(r => [{ text: r.STATUS, callback_data: 'PS_' + r.STATUS + '_' + psID + "_" + moment(endTS).format() + "_" + r.ID }])
                                                 var options = {
@@ -269,10 +269,10 @@ bot.on('message', (msg) => {
                                                     })
                                                 };
                                                 users.forEach(r => {
-                                                    bot.sendMessage(r.TELEGRAM_ID, "Parade state has started and will end in " + duration + " minutes", options)
+                                                    bot.sendMessage(r.TELEGRAM_ID, spsC[nodeChat.ID] + " has started and will end in " + duration + " minutes", options)
                                                 })
-                                                bot.sendMessage(nodeChat.NODE_CHAT_ID, "Parade state started and will end @ " + moment(endTS).format(userFriendlyTS) + "\nYou can type or tap /checkParadeState" + psID + " to check on the status of this parade state")
-                                                bot.sendMessage(adminChat, "Parade started for " + nodeChat.NODE_NAME + " and will end @ " + moment(endTS).format(userFriendlyTS) + "\nYou can type or tap /checkParadeState" + psID + " to check on the status of this parade state")
+                                                bot.sendMessage(nodeChat.NODE_CHAT_ID, spsC[nodeChat.ID] + " has started and will end @ " + moment(endTS).format(userFriendlyTS) + "\nYou can type or tap /checkParadeState" + psID + " to check on the status of this parade state")
+                                                bot.sendMessage(adminChat, spsC[nodeChat.ID] + " has started for " + nodeChat.NODE_NAME + " and will end @ " + moment(endTS).format(userFriendlyTS) + "\nYou can type or tap /checkParadeState" + psID + " to check on the status of this parade state")
 
                                             })
 
@@ -501,7 +501,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                         })
 
                     } else {
-                        connection.query('insert into parade_state_attendance (PS_ID,PS_TS,PS_NAME,PS_RANK,PS_BY_ID,PS_OPTION,PS_REMARKS) values ("' + actions[2] + '","' + moment().add(8, 'hours').format() + '","' + user.NAME + '","' + user.RANK + '","' + user.TELEGRAM_ID + '","' + actions[1] + '","Yet to answer follow up question")', function (error, results, fields) {
+                        connection.query('insert into parade_state_attendance (PS_QN,PS_ID,PS_TS,PS_NAME,PS_RANK,PS_BY_ID,PS_OPTION,PS_REMARKS) values ("'+status.FOLLOW_UP+'","' + actions[2] + '","' + moment().add(8, 'hours').format() + '","' + user.NAME + '","' + user.RANK + '","' + user.TELEGRAM_ID + '","' + actions[1] + '","Yet to answer follow up question")', function (error, results, fields) {
                             if (error) { console.log(error) } else {
                                 bot.sendMessage(responder, "Status selected: " + actions[1] + "\nPlease answer the follow up question below\nYour status is not updated until you answer the follow up question\n\n" + status.FOLLOW_UP)
                                 psQn.push(responder)
@@ -779,11 +779,11 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                     [{ text: "Delete status", callback_data: "deletestatus_" + actions[1] }]
                 ]
                 if (results.FOLLOW_UP == null) {
-                    opts.push([{ text: "Create follow up question", callback_data: "fuqn_" + actions[1] }]) // ok
+                    opts.push([{ text: "Create follow up question", callback_data: "fuqn_" + actions[1] + "_" + actions[2] }]) // ok
                     qn = "No follow up question set\n"
                 } else {
-                    opts.push([{ text: "Edit follow up question", callback_data: "fuqn_" + actions[1] }]) // ok
-                    opts.push([{ text: "Remove follow up question", callback_data: "rmqn_" + actions[1] }])
+                    opts.push([{ text: "Edit follow up question", callback_data: "fuqn_" + actions[1] + "_" + actions[2] }]) // ok
+                    opts.push([{ text: "Remove follow up question", callback_data: "rmqn_" + actions[1] + "_" + actions[2] }])
                     qn = "Follow up question: " + results.FOLLOW_UP + "\n"
                 }
                 opts.push([{ text: "Cancel", callback_data: 'x' }])
@@ -814,7 +814,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     if (path == "rmqn") {
         connection.query('update statuses set FOLLOW_UP = null where ID = ' + actions[1], function (error, results, fields) {
             if (error) { console.log(error) } else {
-                bot.sendMessage(adminChat, "Follow up question succesfully removed")
+                bot.sendMessage(gcID, "Follow up question succesfully removed")
             }
         })
     }
@@ -916,7 +916,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                             let psID = results.insertId
                             connection.query('select * from users where NODE_ID = ' + nodeChat.ID + ' and active = 1 and ord >= ' + moment().add(8, 'hours').format("YYYYMMDD"), function (error, users, fields) {
                                 if (error) { console.log(error) } else {
-                                    connection.query('select * from statuses', function (error, results, fields) {
+                                    connection.query('select * from statuses where NODE_ID = ' + nodeChat.ID, function (error, results, fields) {
                                         statuses = JSON.parse(JSON.stringify(results))
                                         let opts = results.map(r => [{ text: r.STATUS, callback_data: 'PS_' + r.STATUS + '_' + psID + "_" + moment(endTS).format() + "_" + r.ID }])
                                         var options = {
