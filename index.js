@@ -799,7 +799,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     }
 
     if (path == "editstatus") {
-        editStatus[parseInt(actions[2])] = pushparseInt(actions[1])
+        editStatus[parseInt(actions[2])] = parseInt(actions[1])
         bot.sendMessage(gcID, "Please key in the new title for the status")
     }
 
