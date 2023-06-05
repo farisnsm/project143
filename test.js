@@ -1,3 +1,3 @@
 let text = "a"
-let b = "b"
-console.log(text + (b? 1:0))
+let b = null
+console.log(text + (b? b+"X":0))
