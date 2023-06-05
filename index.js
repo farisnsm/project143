@@ -243,6 +243,7 @@ bot.on('message', (msg) => {
             }
 
             if (spsC.hasOwnProperty(nodeChat.ID)) {
+                console.log(spsC)
                 let msgFromName = msg.from.first_name
                 let msgFromId = msg.from.id
                 let duration = parseInt(message)
