@@ -242,8 +242,9 @@ bot.on('message', (msg) => {
                 })
             }
 
-            if (spsC.hasOwnProperty(nodeChat.ID)) {
+            if (spsC.hasOwnProperty(parseInt(nodeChat.ID))) {
                 //console.log(spsC)
+                let psName = spsC[parseInt(nodeChat.ID)]
                 let msgFromName = msg.from.first_name
                 let msgFromId = msg.from.id
                 let duration = parseInt(message)
@@ -270,10 +271,10 @@ bot.on('message', (msg) => {
                                                     })
                                                 };
                                                 users.forEach(r => {
-                                                    bot.sendMessage(r.TELEGRAM_ID, spsC[nodeChat.ID] + " has started and will end in " + duration + " minutes", options)
+                                                    bot.sendMessage(r.TELEGRAM_ID, psName + " has started and will end in " + duration + " minutes", options)
                                                 })
-                                                bot.sendMessage(nodeChat.NODE_CHAT_ID, spsC[nodeChat.ID] + " has started and will end @ " + moment(endTS).format(userFriendlyTS) + "\nYou can type or tap /checkParadeState" + psID + " to check on the status of this parade state")
-                                                bot.sendMessage(adminChat, spsC[nodeChat.ID] + " has started for " + nodeChat.NODE_NAME + " and will end @ " + moment(endTS).format(userFriendlyTS) + "\nYou can type or tap /checkParadeState" + psID + " to check on the status of this parade state")
+                                                bot.sendMessage(nodeChat.NODE_CHAT_ID, psName + " has started and will end @ " + moment(endTS).format(userFriendlyTS) + "\nYou can type or tap /checkParadeState" + psID + " to check on the status of this parade state")
+                                                bot.sendMessage(adminChat, psName + " has started for " + nodeChat.NODE_NAME + " and will end @ " + moment(endTS).format(userFriendlyTS) + "\nYou can type or tap /checkParadeState" + psID + " to check on the status of this parade state")
 
                                             })
 
@@ -286,7 +287,7 @@ bot.on('message', (msg) => {
                         }
                     }
                 })
-                delete spsC[nodeChat.ID]
+                delete spsC[parseInt(nodeChat.ID)]
 
             }
             if (message.toLowerCase().indexOf("/checkparadestate") == 0) {
