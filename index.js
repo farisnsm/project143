@@ -243,7 +243,7 @@ bot.on('message', (msg) => {
             }
 
             if (spsC.hasOwnProperty(nodeChat.ID)) {
-                console.log(spsC)
+                //console.log(spsC)
                 let msgFromName = msg.from.first_name
                 let msgFromId = msg.from.id
                 let duration = parseInt(message)
@@ -947,7 +947,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
 
     if (path == "sps3") {
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
-        spsC[nodeChat.ID] = actions[1]
+        spsC[parseInt(nodeChat.ID)] = actions[1]
         bot.sendMessage(gcID, "Please key in the duration for " + actions[1] + " (in minutes, numbers only)")
     }
 
