@@ -1,4 +1,3 @@
-let ob = {}
-let a = 'x'
-ob[a] = 1
-console.log(ob)
+let text = "a"
+let b = "b"
+console.log(text + (b? 1:0))
