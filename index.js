@@ -257,7 +257,7 @@ bot.on('message', (msg) => {
                 connection.query('select * from parade_state where NODE_ID = ' + nodeChat.ID + ' and PS_END >= "' + startTS + '"', function (error, results, fields) {
                     if (error) { console.log(error) } else {
                         if (results.length == 0) {
-                            connection.query('insert into parade_state (PS_TITLE, PS_START,PS_END,PS_BY_NAME,PS_BY_ID,NODE_ID) values("'+spsC[nodeChat.ID]+'","' + startTS + '","' + endTS + '","' + msgFromName + '","' + msgFromId + '",' + nodeChat.ID + ')', function (error, results, fields) {
+                            connection.query('insert into parade_state (PS_TITLE, PS_START,PS_END,PS_BY_NAME,PS_BY_ID,NODE_ID) values("'+psName+'","' + startTS + '","' + endTS + '","' + msgFromName + '","' + msgFromId + '",' + nodeChat.ID + ')', function (error, results, fields) {
                                 if (error) { console.log(error) } else {
                                     let psID = results.insertId
                                     connection.query('select * from users where NODE_ID = ' + nodeChat.ID + ' and active = 1 and ord >= ' + moment().add(8, 'hours').format("YYYYMMDD"), function (error, users, fields) {
