@@ -959,8 +959,8 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
 
     if (path == 'dl') {
         let i = parseInt(actions[1]) - 1
-        let f = i-6
-        let b = i+6
+        let f = i-7
+        let b = i+7
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
         var options = {
             reply_markup: JSON.stringify({
