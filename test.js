@@ -1,2 +1,5 @@
 let i = 0
-console.log(parseInt(- 1 - i).toString())
+let f = i - 6
+let b = i + 6
+
+console.log(i,f,b)
