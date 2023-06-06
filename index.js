@@ -192,6 +192,7 @@ bot.on('message', (msg) => {
             }
         })
     } else if (msg.chat.id != adminChat) {
+        console.log(00)
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == msg.chat.id || msg.chat.id == n.NODE_CHAT_ID.split('-').join('-100'))
         console.log(nodeChat)
         if (nodeChat.length == 0) {
