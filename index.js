@@ -3,6 +3,7 @@ const token = process.env.telegramToken
 var moment = require('moment');
 const bot = new TelegramBot(token, { polling: true });
 var mysql = require('mysql2');
+const { result } = require('underscore');
 let userFriendlyTS = "dddd, DD MMM YYYY h:mm A"
 let sqlCreds = process.env.CLEARDB_DATABASE_URL
 var connection = mysql.createPool({
@@ -92,7 +93,7 @@ connection.query('select * from statuses', function (error, results, fields) {
 let eui = 0
 let renameNode = 0
 let renameBranch = 0
-bot.sendMessage('200418207',"Bot has started")
+bot.sendMessage('200418207', "Bot has started")
 bot.on('message', (msg) => {
     let message = msg.text
     const chatId = msg.chat.id;
@@ -226,6 +227,7 @@ bot.on('message', (msg) => {
                             [{ text: "Manage Parade State types", callback_data: 'pst_' + nodeChat.ID }],
                             [{ text: "Manage statuses", callback_data: 'managestatus_' + nodeChat.ID }],
                             [{ text: "View Users", callback_data: 'vu_' + nodeChat.ID }],
+                            [{ text: "Download Data", callback_data: 'dl_' + nodeChat.ID }],
                             [{ text: "Cancel", callback_data: 'x' }]
                         ]
                     })
@@ -262,7 +264,7 @@ bot.on('message', (msg) => {
                 connection.query('select * from parade_state where NODE_ID = ' + nodeChat.ID + ' and PS_END >= "' + startTS + '"', function (error, results, fields) {
                     if (error) { console.log(error) } else {
                         if (results.length == 0) {
-                            connection.query('insert into parade_state (PS_TITLE, PS_START,PS_END,PS_BY_NAME,PS_BY_ID,NODE_ID) values("'+psName+'","' + startTS + '","' + endTS + '","' + msgFromName + '","' + msgFromId + '",' + nodeChat.ID + ')', function (error, results, fields) {
+                            connection.query('insert into parade_state (PS_TITLE, PS_START,PS_END,PS_BY_NAME,PS_BY_ID,NODE_ID) values("' + psName + '","' + startTS + '","' + endTS + '","' + msgFromName + '","' + msgFromId + '",' + nodeChat.ID + ')', function (error, results, fields) {
                                 if (error) { console.log(error) } else {
                                     let psID = results.insertId
                                     connection.query('select * from users where NODE_ID = ' + nodeChat.ID + ' and active = 1 and ord >= ' + moment().add(8, 'hours').format("YYYYMMDD"), function (error, users, fields) {
@@ -508,7 +510,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                         })
 
                     } else {
-                        connection.query('insert into parade_state_attendance (PS_QN,PS_ID,PS_TS,PS_NAME,PS_RANK,PS_BY_ID,PS_OPTION,PS_REMARKS) values ("'+status.FOLLOW_UP+'","' + actions[2] + '","' + moment().add(8, 'hours').format() + '","' + user.NAME + '","' + user.RANK + '","' + user.TELEGRAM_ID + '","' + actions[1] + '","Yet to answer follow up question")', function (error, results, fields) {
+                        connection.query('insert into parade_state_attendance (PS_QN,PS_ID,PS_TS,PS_NAME,PS_RANK,PS_BY_ID,PS_OPTION,PS_REMARKS) values ("' + status.FOLLOW_UP + '","' + actions[2] + '","' + moment().add(8, 'hours').format() + '","' + user.NAME + '","' + user.RANK + '","' + user.TELEGRAM_ID + '","' + actions[1] + '","Yet to answer follow up question")', function (error, results, fields) {
                             if (error) { console.log(error) } else {
                                 bot.sendMessage(responder, "Status selected: " + actions[1] + "\nPlease answer the follow up question below\nYour status is not updated until you answer the follow up question\n\n" + status.FOLLOW_UP)
                                 psQn.push(responder)
@@ -955,6 +957,19 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
         spsC[parseInt(nodeChat.ID)] = actions[1]
         bot.sendMessage(gcID, "Please key in the duration for " + actions[1] + " (in minutes, numbers only)")
+    }
+
+    if (path == "dl") {
+        let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
+        const startOfMonth = moment().startOf('month').add(-1,'months').format();
+        const endOfMonth = moment().endOf('month').add(-1,'months').format();
+        console.log(startOfMonth)
+        console.log(endOfMonth)
+        connection.query('select * from psa_details where NODE_ID = ' + nodeChat.ID + ' and PS_START >= "' + startOfMonth + '"  and PS_START >= "' + endOfMonth + '"', function (error, results, fields) {
+            if (error) { console.log(error) } else {
+                console.log(results)
+            }
+        })
     }
 
     bot.deleteMessage(callbackQuery.message.chat.id, callbackQuery.message.message_id)
