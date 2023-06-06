@@ -964,7 +964,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
         const startOfMonth = moment().startOf('month').add(-1,'months').format();
         const endOfMonth = moment().endOf('month').add(-1,'months').format();
-        connection.query("SELECT  DATE_FORMAT(PS_START, '%d %b %Y') as 'DATE', PS_TITLE as TITLE, concat(PS_RANK, ' ', PS_NAME) as USER, BRANCH_NAME as BRANCH, PS_OPTION as STATUS, PS_QN as 'FOLLOW UP QUESTION', PS_REMARKS as 'FOLLOW UP ANSWER',  DATE_FORMAT(PS_TS, '%d %b %Y %T.%f') as 'RESPONSE TIMESTAMP', PS_ID as 'PARADE STATE ID',  DATE_FORMAT(PS_START, '%d %b %Y %T.%f') as 'PARADE STATE START',  DATE_FORMAT(PS_END, '%d %b %Y %T.%f') as 'PARADE STATE END' from psa_details where NODE_ID = " + nodeChat.ID + ' and PS_START >= "' + startOfMonth + '"  and PS_START >= "' + endOfMonth + '"', function (error, results, fields) {
+        connection.query("SELECT  DATE_FORMAT(PS_START, '%d %b %Y') as 'DATE', PS_TITLE as TITLE, concat(PS_RANK, ' ', PS_NAME) as USER, BRANCH_NAME as BRANCH, PS_OPTION as STATUS, PS_QN as 'FOLLOW UP QUESTION', PS_REMARKS as 'FOLLOW UP ANSWER',  DATE_FORMAT(PS_TS, '%d %b %Y %T') as 'RESPONSE TIMESTAMP', PS_ID as 'PARADE STATE ID',  DATE_FORMAT(PS_START, '%d %b %Y %T') as 'PARADE STATE START',  DATE_FORMAT(PS_END, '%d %b %Y %T') as 'PARADE STATE END' from psa_details where NODE_ID = " + nodeChat.ID + ' and PS_START >= "' + startOfMonth + '"  and PS_START >= "' + endOfMonth + '"', function (error, results, fields) {
             if (error) { console.log(error) } else {
                 (async () => {
                     const csv = new ObjectsToCsv(results);
