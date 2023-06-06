@@ -970,10 +970,10 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                     const csv = new ObjectsToCsv(results);
                    
                     // Save to file:
-                    await csv
+                    await csv.toDisk('./test.csv');
                    
                     // Return the CSV file as string:
-                    bot.sendDocument(gcID,csv)
+                    bot.sendDocument(gcID,'./test.csv')
                   })();
             }
         })
