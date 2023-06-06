@@ -966,8 +966,15 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         const endOfMonth = moment().endOf('month').add(-1,'months').format();
         connection.query("select date(PS_START) as 'DATE', PS_TITLE as TITLE, concat(PS_RANK, ' ', PS_NAME) as USER, BRANCH_NAME as BRANCH, PS_OPTION as STATUS, PS_QN as 'FOLLOW UP QUESTION', PS_REMARKS as 'FOLLOW UP ANSWER', PS_TS as 'RESPONSE TIMESTAMP', PS_ID as 'PARADE STATE ID', PS_START as 'PARADE STATE START', PS_END as 'PARADE STATE END'  from psa_details where NODE_ID = " + nodeChat.ID + ' and PS_START >= "' + startOfMonth + '"  and PS_START >= "' + endOfMonth + '"', function (error, results, fields) {
             if (error) { console.log(error) } else {
-                let file = new ObjectsToCsv(results)
-                bot.sendDocument(gcID,file)
+                (async () => {
+                    const csv = new ObjectsToCsv(results);
+                   
+                    // Save to file:
+                    await csv
+                   
+                    // Return the CSV file as string:
+                    bot.sendDocument(gcID,csv)
+                  })();
             }
         })
     }
