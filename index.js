@@ -394,7 +394,7 @@ bot.on('message', (msg) => {
             checkParadeState(psID, adminChat, 0)
         }
         if (createNode == true) {
-            connection.query("insert into nodes (node_name) values ('" + message + "')", function (error, results, fields) {
+            connection.query("insert into nodes (node_name,node_chat_id) values ('" + message + "','')", function (error, results, fields) {
                 if (error) { console.log(error) } else {
                     newNodeID = results.insertId
                     nodeOTP = Math.floor(Math.random() * (9999 - 1000) + 1000)
