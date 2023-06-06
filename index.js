@@ -194,11 +194,9 @@ bot.on('message', (msg) => {
             }
         })
     } else if (msg.chat.id != adminChat) {
-        console.log(2)
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == msg.chat.id || msg.chat.id == n.NODE_CHAT_ID.split('-').join('-100'))
-        console.log(nodeChat)
+
         if (nodeChat.length == 0) {
-            console.log(0)
             if (nodeOTP == message.trim() && nodeOTP != 0) {
                 //OTP recognized
                 connection.query("update nodes set NODE_CHAT_ID = '" + msg.chat.id + "' where ID = " + newNodeID, function (error, results, fields) {
@@ -216,9 +214,7 @@ bot.on('message', (msg) => {
                 bot.sendMessage(msg.chat.id, "This group chat has not been verified. Please obtain an OTP from the Bot Administrator to set up this group chat")
             }
         } else {
-            console.log(1)
             nodeChat = nodeChat[0]
-            console.log(nodeChat)
             if (message == '/start' || message == '/info') {
                 var options = {
                     reply_markup: JSON.stringify({
@@ -963,19 +959,22 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
 
     if (path == 'dl') {
         let i = parseInt(actions[1])
-        let f = i ++
-        let b = i --
+        let f = i++
+        let b = i--
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
+        console.log(i)
+        console.log(f)
+        console.log(b)
         var options = {
             reply_markup: JSON.stringify({
                 inline_keyboard: [
-                    [{ text: moment().add(-1-i,months).format("MMM YYYY"), callback_data: "dl2_" + (-1-i)}],
-                    [{ text: moment().add(-2-i,months).format("MMM YYYY"), callback_data: "dl2_" + (-2-i) }],
-                    [{ text: moment().add(-3-i,months).format("MMM YYYY"), callback_data: "dl2_" + (-3-i) }],
-                    [{ text: moment().add(-4-i,months).format("MMM YYYY"), callback_data: "dl2_" + (-4-i) }],
-                    [{ text: moment().add(-5-i,months).format("MMM YYYY"), callback_data: "dl2_" + (-5-i) }],
-                    [{ text: moment().add(-6-i,months).format("MMM YYYY"), callback_data: "dl2_" + (-6-i) }],
-                    [{ text: "<<<", callback_data: 'dl_' +  b},{ text: ">>>", callback_data: 'dl_' + f}]
+                    [{ text: moment().add(-1 - i, months).format("MMM YYYY"), callback_data: "dl2_" + (-1 - i) }],
+                    [{ text: moment().add(-2 - i, months).format("MMM YYYY"), callback_data: "dl2_" + (-2 - i) }],
+                    [{ text: moment().add(-3 - i, months).format("MMM YYYY"), callback_data: "dl2_" + (-3 - i) }],
+                    [{ text: moment().add(-4 - i, months).format("MMM YYYY"), callback_data: "dl2_" + (-4 - i) }],
+                    [{ text: moment().add(-5 - i, months).format("MMM YYYY"), callback_data: "dl2_" + (-5 - i) }],
+                    [{ text: moment().add(-6 - i, months).format("MMM YYYY"), callback_data: "dl2_" + (-6 - i) }],
+                    [{ text: "<<<", callback_data: 'dl_' + b }, { text: ">>>", callback_data: 'dl_' + f }]
                     [{ text: "Cancel", callback_data: 'x' }]
                 ]
             })
