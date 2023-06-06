@@ -965,12 +965,12 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         var options = {
             reply_markup: JSON.stringify({
                 inline_keyboard: [
-                    [{ text: moment().add(-1 - i, months).format("MMM YYYY"), callback_data: "dl2_" + parseInt(-1 - i).toString() }],
-                    [{ text: moment().add(-2 - i, months).format("MMM YYYY"), callback_data: "dl2_" + parseInt(-2 - i).toString() }],
-                    [{ text: moment().add(-3 - i, months).format("MMM YYYY"), callback_data: "dl2_" + parseInt(-3 - i).toString() }],
-                    [{ text: moment().add(-4 - i, months).format("MMM YYYY"), callback_data: "dl2_" + parseInt(-4 - i).toString() }],
-                    [{ text: moment().add(-5 - i, months).format("MMM YYYY"), callback_data: "dl2_" + parseInt(-5 - i).toString() }],
-                    [{ text: moment().add(-6 - i, months).format("MMM YYYY"), callback_data: "dl2_" + parseInt(-6 - i).toString() }],
+                    [{ text: moment().add(-1 - i, 'months').format("MMM YYYY"), callback_data: "dl2_" + parseInt(-1 - i).toString() }],
+                    [{ text: moment().add(-2 - i, 'months').format("MMM YYYY"), callback_data: "dl2_" + parseInt(-2 - i).toString() }],
+                    [{ text: moment().add(-3 - i, 'months').format("MMM YYYY"), callback_data: "dl2_" + parseInt(-3 - i).toString() }],
+                    [{ text: moment().add(-4 - i, 'months').format("MMM YYYY"), callback_data: "dl2_" + parseInt(-4 - i).toString() }],
+                    [{ text: moment().add(-5 - i, 'months').format("MMM YYYY"), callback_data: "dl2_" + parseInt(-5 - i).toString() }],
+                    [{ text: moment().add(-6 - i, 'months').format("MMM YYYY"), callback_data: "dl2_" + parseInt(-6 - i).toString() }],
                     [{ text: "<<<", callback_data: 'dl_' + b }, { text: ">>>", callback_data: 'dl_' + f }]
                     [{ text: "Cancel", callback_data: 'x' }]
                 ]
