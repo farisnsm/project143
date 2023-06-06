@@ -962,24 +962,21 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         let f = i++
         let b = i--
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
-        console.log(i)
-        console.log(f)
-        console.log(b)
         var options = {
             reply_markup: JSON.stringify({
                 inline_keyboard: [
-                    [{ text: moment().add(-1 - i, months).format("MMM YYYY"), callback_data: "dl2_" + (-1 - i) }],
-                    [{ text: moment().add(-2 - i, months).format("MMM YYYY"), callback_data: "dl2_" + (-2 - i) }],
-                    [{ text: moment().add(-3 - i, months).format("MMM YYYY"), callback_data: "dl2_" + (-3 - i) }],
-                    [{ text: moment().add(-4 - i, months).format("MMM YYYY"), callback_data: "dl2_" + (-4 - i) }],
-                    [{ text: moment().add(-5 - i, months).format("MMM YYYY"), callback_data: "dl2_" + (-5 - i) }],
-                    [{ text: moment().add(-6 - i, months).format("MMM YYYY"), callback_data: "dl2_" + (-6 - i) }],
+                    [{ text: moment().add(-1 - i, months).format("MMM YYYY"), callback_data: "dl2_" + parseInt(-1 - i).toString() }],
+                    [{ text: moment().add(-2 - i, months).format("MMM YYYY"), callback_data: "dl2_" + parseInt(-2 - i).toString() }],
+                    [{ text: moment().add(-3 - i, months).format("MMM YYYY"), callback_data: "dl2_" + parseInt(-3 - i).toString() }],
+                    [{ text: moment().add(-4 - i, months).format("MMM YYYY"), callback_data: "dl2_" + parseInt(-4 - i).toString() }],
+                    [{ text: moment().add(-5 - i, months).format("MMM YYYY"), callback_data: "dl2_" + parseInt(-5 - i).toString() }],
+                    [{ text: moment().add(-6 - i, months).format("MMM YYYY"), callback_data: "dl2_" + parseInt(-6 - i).toString() }],
                     [{ text: "<<<", callback_data: 'dl_' + b }, { text: ">>>", callback_data: 'dl_' + f }]
                     [{ text: "Cancel", callback_data: 'x' }]
                 ]
             })
         };
-        bot.sendMessage(gcID, "Select which month's data do you want to download. Data more than 6 months ago", options)
+        bot.sendMessage(gcID, "Select which month's data do you want to download", options)
     }
 
     // if (path == "dl") {
