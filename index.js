@@ -228,7 +228,7 @@ bot.on('message', (msg) => {
                             [{ text: "Manage Parade State types", callback_data: 'pst_' + nodeChat.ID }],
                             [{ text: "Manage statuses", callback_data: 'managestatus_' + nodeChat.ID }],
                             [{ text: "View Users", callback_data: 'vu_' + nodeChat.ID }],
-                            [{ text: "Download Data", callback_data: 'dl_' + nodeChat.ID }],
+                            [{ text: "Download Data", callback_data: 'dl_0' }],
                             [{ text: "Cancel", callback_data: 'x' }]
                         ]
                     })
@@ -960,24 +960,47 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         bot.sendMessage(gcID, "Please key in the duration for " + actions[1] + " (in minutes, numbers only)")
     }
 
-    if (path == "dl") {
+
+    if (path == 'dl') {
+        let i = parseInt(actions[1])
+        let f = i ++
+        let b = i --
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
-        const startOfMonth = moment().startOf('month').add(-1,'months').format();
-        const endOfMonth = moment().endOf('month').add(-1,'months').format();
-        connection.query("SELECT  DATE_FORMAT(PS_START, '%d %b %Y') as 'DATE', PS_TITLE as TITLE, concat(PS_RANK, ' ', PS_NAME) as USER, BRANCH_NAME as BRANCH, PS_OPTION as STATUS, PS_QN as 'FOLLOW UP QUESTION', PS_REMARKS as 'FOLLOW UP ANSWER',  DATE_FORMAT(PS_TS, '%d %b %Y %T') as 'RESPONSE TIMESTAMP', PS_ID as 'PARADE STATE ID',  DATE_FORMAT(PS_START, '%d %b %Y %T') as 'PARADE STATE START',  DATE_FORMAT(PS_END, '%d %b %Y %T') as 'PARADE STATE END' from psa_details where NODE_ID = " + nodeChat.ID + ' and PS_START >= "' + startOfMonth + '"  and PS_START >= "' + endOfMonth + '" order by PS_ID asc,branch', function (error, results, fields) {
-            if (error) { console.log(error) } else {
-                (async () => {
-                    const csv = new ObjectsToCsv(results);
-                   
-                    // Save to file:
-                    await csv.toDisk('./export.csv');
-                   
-                    // Return the CSV file as string:
-                    bot.sendDocument(gcID,'./export.csv')
-                  })();
-            }
-        })
+        var options = {
+            reply_markup: JSON.stringify({
+                inline_keyboard: [
+                    [{ text: moment().add(-1-i,months).format("MMM YYYY"), callback_data: "dl2_" + (-1-i)}],
+                    [{ text: moment().add(-2-i,months).format("MMM YYYY"), callback_data: "dl2_" + (-2-i) }],
+                    [{ text: moment().add(-3-i,months).format("MMM YYYY"), callback_data: "dl2_" + (-3-i) }],
+                    [{ text: moment().add(-4-i,months).format("MMM YYYY"), callback_data: "dl2_" + (-4-i) }],
+                    [{ text: moment().add(-5-i,months).format("MMM YYYY"), callback_data: "dl2_" + (-5-i) }],
+                    [{ text: moment().add(-6-i,months).format("MMM YYYY"), callback_data: "dl2_" + (-6-i) }],
+                    [{ text: "<<<", callback_data: 'dl_' +  b},{ text: ">>>", callback_data: 'dl_' + f}]
+                    [{ text: "Cancel", callback_data: 'x' }]
+                ]
+            })
+        };
+        bot.sendMessage(gcID, "Select which month's data do you want to download. Data more than 6 months ago", options)
     }
+
+    // if (path == "dl") {
+    //     let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
+    //     const startOfMonth = moment().startOf('month').add(-1, 'months').format();
+    //     const endOfMonth = moment().endOf('month').add(-1, 'months').format();
+    //     connection.query("SELECT  DATE_FORMAT(PS_START, '%d %b %Y') as 'DATE', PS_TITLE as TITLE, concat(PS_RANK, ' ', PS_NAME) as USER, BRANCH_NAME as BRANCH, PS_OPTION as STATUS, PS_QN as 'FOLLOW UP QUESTION', PS_REMARKS as 'FOLLOW UP ANSWER',  DATE_FORMAT(PS_TS, '%d %b %Y %T') as 'RESPONSE TIMESTAMP', PS_ID as 'PARADE STATE ID',  DATE_FORMAT(PS_START, '%d %b %Y %T') as 'PARADE STATE START',  DATE_FORMAT(PS_END, '%d %b %Y %T') as 'PARADE STATE END' from psa_details where NODE_ID = " + nodeChat.ID + ' and PS_START >= "' + startOfMonth + '"  and PS_START >= "' + endOfMonth + '" order by PS_ID asc,branch', function (error, results, fields) {
+    //         if (error) { console.log(error) } else {
+    //             (async () => {
+    //                 const csv = new ObjectsToCsv(results);
+
+    //                 // Save to file:
+    //                 await csv.toDisk('./export.csv');
+
+    //                 // Return the CSV file as string:
+    //                 bot.sendDocument(gcID, './export.csv')
+    //             })();
+    //         }
+    //     })
+    // }
 
     bot.deleteMessage(callbackQuery.message.chat.id, callbackQuery.message.message_id)
 })
