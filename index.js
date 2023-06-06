@@ -193,7 +193,9 @@ bot.on('message', (msg) => {
         })
     } else if (msg.chat.id != adminChat) {
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == msg.chat.id || msg.chat.id == n.NODE_CHAT_ID.split('-').join('-100'))
+        console.log(nodeChat)
         if (nodeChat.length == 0) {
+            console.log(0)
             if (nodeOTP == message.trim() && nodeOTP != 0) {
                 //OTP recognized
                 connection.query("update nodes set NODE_CHAT_ID = '" + msg.chat.id + "' where ID = " + newNodeID, function (error, results, fields) {
@@ -211,7 +213,9 @@ bot.on('message', (msg) => {
                 bot.sendMessage(msg.chat.id, "This group chat has not been verified. Please obtain an OTP from the Bot Administrator to set up this group chat")
             }
         } else {
+            console.log(1)
             nodeChat = nodeChat[0]
+            console.log(nodeChat)
             if (message == '/start' || message == '/info') {
                 var options = {
                     reply_markup: JSON.stringify({
