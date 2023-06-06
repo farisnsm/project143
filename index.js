@@ -976,11 +976,11 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                 ]
             })
         };
-        bot.sendMessage(gcID, "Select which month's data do you want to download", options)
+        bot.sendMessage(gcID, "Select which month's data you want to download", options)
     }
 
     if (path == "dl2") {
-        let i = 0 - parseInt(actions[1])
+        let i = parseInt(actions[1])
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
         const startOfMonth = moment().startOf('month').add(i, 'months').format();
         const endOfMonth = moment().endOf('month').add(i, 'months').format();
