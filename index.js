@@ -5,6 +5,7 @@ const bot = new TelegramBot(token, { polling: true });
 var mysql = require('mysql2');
 const { result } = require('underscore');
 let userFriendlyTS = "dddd, DD MMM YYYY h:mm A"
+const ObjectsToCsv = require('objects-to-csv');
 let sqlCreds = process.env.CLEARDB_DATABASE_URL
 var connection = mysql.createPool({
     connectionLimit: 100,
@@ -963,11 +964,10 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
         const startOfMonth = moment().startOf('month').add(-1,'months').format();
         const endOfMonth = moment().endOf('month').add(-1,'months').format();
-        console.log(startOfMonth)
-        console.log(endOfMonth)
-        connection.query('select * from psa_details where NODE_ID = ' + nodeChat.ID + ' and PS_START >= "' + startOfMonth + '"  and PS_START >= "' + endOfMonth + '"', function (error, results, fields) {
+        connection.query("select date(PS_START) as 'DATE', PS_TITLE as TITLE, concat(PS_RANK, ' ', PS_NAME) as USER, BRANCH_NAME as BRANCH, PS_OPTION as STATUS, PS_QN as 'FOLLOW UP QUESTION', PS_REMARKS as 'FOLLOW UP ANSWER', PS_TS as 'RESPONSE TIMESTAMP', PS_ID as 'PARADE STATE ID', PS_START as 'PARADE STATE START', PS_END as 'PARADE STATE END'  from psa_details where NODE_ID = " + nodeChat.ID + ' and PS_START >= "' + startOfMonth + '"  and PS_START >= "' + endOfMonth + '"', function (error, results, fields) {
             if (error) { console.log(error) } else {
-                console.log(results)
+                let file = new ObjectsToCsv(results)
+                bot.sendDocument(gcID,file)
             }
         })
     }
