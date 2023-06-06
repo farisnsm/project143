@@ -958,7 +958,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
 
 
     if (path == 'dl') {
-        let i = parseInt(actions[1])
+        let i = parseInt(actions[1]) +1
         let f = i++
         let b = i--
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
@@ -971,7 +971,7 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
                     [{ text: moment().add(-4 - i, 'months').format("MMM YYYY"), callback_data: "dl2_" + parseInt(-4 - i).toString() }],
                     [{ text: moment().add(-5 - i, 'months').format("MMM YYYY"), callback_data: "dl2_" + parseInt(-5 - i).toString() }],
                     [{ text: moment().add(-6 - i, 'months').format("MMM YYYY"), callback_data: "dl2_" + parseInt(-6 - i).toString() }],
-                    [{ text: "<<<", callback_data: 'dl_' + b }, { text: ">>>", callback_data: 'dl_' + f }]
+                    [{ text: "<<<", callback_data: 'dl_' + b }, { text: ">>>", callback_data: 'dl_' + f }],
                     [{ text: "Cancel", callback_data: 'x' }]
                 ]
             })
