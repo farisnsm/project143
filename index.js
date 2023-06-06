@@ -959,8 +959,8 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
 
     if (path == 'dl') {
         let i = parseInt(actions[1]) - 1
-        let f = i-7
-        let b = i+7
+        let f = i - 7
+        let b = i + 7
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
         var options = {
             reply_markup: JSON.stringify({
@@ -983,22 +983,27 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
         let i = parseInt(actions[1])
         let nodeChat = nodeChats.filter(n => n.NODE_CHAT_ID == gcID || gcID == n.NODE_CHAT_ID.split('-').join('-100'))[0]
         const startOfMonth = moment().startOf('month').add(i, 'months').format();
+        let fileName = moment().startOf('month').add(i, 'months').format("MMM YYYY")
         const endOfMonth = moment().endOf('month').add(i, 'months').format();
-        console.log(startOfMonth)
-        console.log(endOfMonth)
-        // connection.query("SELECT  DATE_FORMAT(PS_START, '%d %b %Y') as 'DATE', PS_TITLE as TITLE, concat(PS_RANK, ' ', PS_NAME) as USER, BRANCH_NAME as BRANCH, PS_OPTION as STATUS, PS_QN as 'FOLLOW UP QUESTION', PS_REMARKS as 'FOLLOW UP ANSWER',  DATE_FORMAT(PS_TS, '%d %b %Y %T') as 'RESPONSE TIMESTAMP', PS_ID as 'PARADE STATE ID',  DATE_FORMAT(PS_START, '%d %b %Y %T') as 'PARADE STATE START',  DATE_FORMAT(PS_END, '%d %b %Y %T') as 'PARADE STATE END' from psa_details where NODE_ID = " + nodeChat.ID + ' and PS_START >= "' + startOfMonth + '"  and PS_START >= "' + endOfMonth + '" order by PS_ID asc,branch', function (error, results, fields) {
-        //     if (error) { console.log(error) } else {
-        //         (async () => {
-        //             const csv = new ObjectsToCsv(results);
+        connection.query("SELECT  DATE_FORMAT(PS_START, '%d %b %Y') as 'DATE', PS_TITLE as TITLE, concat(PS_RANK, ' ', PS_NAME) as USER, NODE_NAME as NODE, BRANCH_NAME as BRANCH, PS_OPTION as STATUS, PS_QN as 'FOLLOW UP QUESTION', PS_REMARKS as 'FOLLOW UP ANSWER',  DATE_FORMAT(PS_TS, '%d %b %Y %T') as 'RESPONSE TIMESTAMP', PS_ID as 'PARADE STATE ID',  DATE_FORMAT(PS_START, '%d %b %Y %T') as 'PARADE STATE START',  DATE_FORMAT(PS_END, '%d %b %Y %T') as 'PARADE STATE END' from psa_details where NODE_ID = " + nodeChat.ID + ' and PS_START >= "' + startOfMonth + '"  and PS_START >= "' + endOfMonth + '" order by PS_ID asc,branch', function (error, results, fields) {
+            if (error) { console.log(error) } else {
+                if (results.length == 0) {
+                    bot.sendMessage(gcID,"No data for " + fileName)
+                } else {
+                    bot.sendMessage(gcID,"Generating data for " + fileName)
+                    (async () => {
+                        const csv = new ObjectsToCsv(results);
 
-        //             // Save to file:
-        //             await csv.toDisk('./export.csv');
+                        // Save to file:
+                        await csv.toDisk('./' + fileName + '.csv');
 
-        //             // Return the CSV file as string:
-        //             bot.sendDocument(gcID, './export.csv')
-        //         })();
-        //     }
-        // })
+                        // Return the CSV file as string:
+                        bot.sendDocument(gcID, './' + fileName + '.csv')
+                    })();
+                }
+
+            }
+        })
     }
 
     bot.deleteMessage(callbackQuery.message.chat.id, callbackQuery.message.message_id)
